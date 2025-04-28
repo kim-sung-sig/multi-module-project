@@ -13,12 +13,11 @@ include 'common:common-api'
 project(':common:common-api').projectDir = file('common/common-api')
 
 include 'common:web-security'
-project(":common:web-security").projectDir = file('common/web-security')
+project(':common:web-security').projectDir = file('common/web-security')
 
-include 'user:domain'
-include 'user:service'
-include 'user:api'
-
-include 'auth:domain'
-include 'auth:service'
-include 'auth:api'
+include 'api-user:user-domain'
+project(':api-user:user-domain').projectDir = file('api-user/user-domain')
+include 'api-user:user-auth'
+project(':api-user:user-auth').projectDir = file('api-user/user-auth')
+include 'api-user:user-application'
+project(':api-user:user-application').projectDir = file('api-user/user-application')
