@@ -13,7 +13,8 @@ dependencies {
 	implementation project(':common:common-domain')
 	implementation project(':api-user:user-domain')
 
-	implementation project(':common:common-api')
 	implementation project(':common:common-security')
+	implementation project(':common:common-api')
+	implementation project(':common:web-security')
 
 }
