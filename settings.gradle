@@ -1,23 +1,7 @@
 rootProject.name = 'multi-module-project'
 
-include 'common:common-util'
-project(':common:common-util').projectDir = file('common/common-util')
+include 'common'
+project(':common').projectDir = file('common')
 
-include 'common:common-security'
-project(':common:common-security').projectDir = file('common/common-security')
-
-include 'common:common-domain'
-project(':common:common-domain').projectDir = file('common/common-domain')
-
-include 'common:common-api'
-project(':common:common-api').projectDir = file('common/common-api')
-
-include 'common:web-security'
-project(':common:web-security').projectDir = file('common/web-security')
-
-include 'api-user:user-domain'
-project(':api-user:user-domain').projectDir = file('api-user/user-domain')
-include 'api-user:user-auth'
-project(':api-user:user-auth').projectDir = file('api-user/user-auth')
-include 'api-user:user-application'
-project(':api-user:user-application').projectDir = file('api-user/user-application')
+include 'api-user'
+project(':api-user').projectDir = file('api-user')
