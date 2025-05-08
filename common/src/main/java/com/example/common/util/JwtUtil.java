@@ -31,6 +31,8 @@ public class JwtUtil {
 
     public static final String AUTHORIZATION = "Authorization";
     public static final String BEARER_PREFIX = "Bearer ";
+    public static final long ACCESS_TOKEN_TTL = 5 * 60; // 5분
+    public static final long REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60; // 7일
 
     @PostConstruct
     public void init() {

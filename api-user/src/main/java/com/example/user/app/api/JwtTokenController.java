@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.common.model.ApiResponse;
-import com.example.user.app.application.token.JwtTokenService;
-import com.example.user.app.response.JwtTokenResponse;
+import com.example.user.app.application.service.token.JwtTokenService;
+import com.example.user.app.dto.response.JwtTokenResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
