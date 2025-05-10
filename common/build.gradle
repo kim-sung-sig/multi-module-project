@@ -13,14 +13,13 @@ tasks.named('jar'){ // jar 설정은 켜기
 
 dependencies {
 
-    implementation 'org.springframework:spring-core'
-    implementation 'org.springframework:spring-context' // DI 유틸이면 추가
+    // implementation 'org.springframework:spring-core'
+    // implementation 'org.springframework:spring-context' // DI 유틸이면 추가
+    // implementation 'jakarta.annotation:jakarta.annotation-api'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    implementation 'jakarta.annotation:jakarta.annotation-api'
-
-    // implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     // https://mvnrepository.com/artifact/com.github.f4b6a3/uuid-creator
