@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 
+import com.example.user.app.application.auth.components.LoginComponent;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +17,8 @@ import com.example.user.app.application.auth.CustomAuthException;
 import com.example.user.app.application.auth.CustomAuthException.AuthErrorCode;
 import com.example.user.app.application.auth.components.JwtTokenProvider;
 import com.example.user.app.application.auth.components.SocialOAuth2Service;
-import com.example.user.app.application.auth.dto.oauth.OAuth2Data;
-import com.example.user.app.application.auth.dto.oauth.OAuthRequest;
+import com.example.user.app.application.auth.dto.OAuth2Data;
+import com.example.user.app.application.auth.dto.request.OAuthRequest;
 import com.example.user.app.application.auth.dto.response.JwtTokenResponse;
 import com.example.user.app.application.nickname.NickNameTagGenerator;
 import com.example.user.app.application.nickname.domain.NickName;
@@ -41,6 +42,7 @@ public class OAuth2Service {
     private final JwtTokenProvider jwtTokenProvider;              // jwt component
     private final NickNameTagGenerator nickNameTagGenerator;        // nickName component
 
+    private final LoginComponent loginComponent;
     private final Map<String, SocialOAuth2Service> socialServices;  // oauth2 component
 
     @Transactional
@@ -65,7 +67,7 @@ public class OAuth2Service {
 
         // 토큰 발급
         JwtTokenResponse token = jwtTokenProvider.getTokenResponseWithDeletion(securityUser);
-        log.info("[TOKEN SUCCESS] New token issued. userId: {}, accessToken: {}, refreshToken: {}", securityUser.id(), token.accessToken(), token.refreshToken());
+        log.info("[TOKEN SUCCESS] New token issued. userId: {}, accessToken: {}, refreshToken: {}", securityUser.getId(), token.accessToken(), token.refreshToken());
         return token;
     }
 
@@ -98,7 +100,8 @@ public class OAuth2Service {
             NickName.tryCreate(nickName)
                     .ifPresent(n -> {
                         NickNameTag uniqueNickNameTag = nickNameTagGenerator.generateTag(n);
-                        user.changeNickName(uniqueNickNameTag);
+                        user.setName(uniqueNickNameTag.getNickName().get());
+                        user.setNickNameTag(uniqueNickNameTag.getTag());
                     });
         }
 

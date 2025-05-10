@@ -3,8 +3,10 @@ package com.example.user.app.application.auth.service;
 import java.util.Collections;
 import java.util.UUID;
 
+import com.example.common.enums.ErrorCode;
+import com.example.common.exception.BusinessException;
+import com.example.user.app.application.auth.components.LoginComponent;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,45 +34,38 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    private final LoginComponent loginComponent;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;              // jwt component
 
-    /** 토큰 발급 (username, password)
-     * @param loginRequest
-     * @return
+    /**
+     * 토큰 발급 (username, password)
      */
     @Transactional
     public JwtTokenResponse createTokenByUsernameAndPassword(String inputUsername, String inputPassword) {
 
-        // TODO exception 변경하기
-        User user = userRepository.findByUsername(inputUsername)
-                .orElseThrow(() -> new BadCredentialsException("Invalid username or password"));
+        final var exception = new BusinessException(ErrorCode.UNAUTHORIZED, "아이디 또는 비밀번호가 틀립니다.");
 
-        // 사용자의 비밀번호 일치여부 확인
-        if (!passwordEncoder.matches(inputPassword, user.getPassword())) {
-            throw new BadCredentialsException("Invalid username or password");
+        var securityUser = loginComponent.loadByUsername(inputUsername)
+                .orElseThrow(() -> exception);
+
+         if (!securityUser.isEnabled()) {
+             log.warn("[SECURITY WARNING] Disabled user attempted to log in. username: {}, userId: {}", inputUsername, securityUser.getId());
+             throw exception;
+         }
+
+        if (!securityUser.isAccountNonLocked()) {
+            log.warn("[SECURITY WARNING] Locked user attempted to log in. username: {}, userId: {}", inputUsername, securityUser.getId());
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "계정이 잠겨있는 상태입니다.");
         }
 
-        // if (!securityUser.isEnabled()) {
-        //     log.warn("[SECURITY WARNING] Disabled user attempted to login. username: {}, userId: {}", inputUsername, user.getId());
-        //     throw new BadCredentialsException("User account is disabled");
-        // }
-        
-        // if (!securityUser.isAccountNonLocked()) {
-        //     log.warn("[SECURITY WARNING] Locked user attempted to login. username: {}, userId: {}", inputUsername, user.getId());
-        //     throw new LockedException("User account is locked");
-        // }
+        // 사용자의 비밀번호 일치여부 확인
+        if (!passwordEncoder.matches(inputPassword, securityUser.getPassword())) {
+            loginComponent.loginFail(securityUser);
+            throw exception;
+        }
 
-        SecurityUser securityUser = new SecurityUser(
-            user.getId(),
-            user.getUsername(),
-            user.getPassword(),
-            Collections.singletonList(user.getRole().name())
-        );
-
-        JwtTokenResponse token = jwtTokenProvider.getTokenResponseWithDeletion(securityUser);
-        log.info("[TOKEN SUCCESS] New token issued. userId: {}, accessToken: {}, refreshToken: {}", securityUser.id(), token.accessToken(), token.refreshToken());
-        return token;
+        return jwtTokenProvider.getTokenResponseWithDeletion(securityUser);
     }
 
     /** 토큰 발급 (refreshToken)

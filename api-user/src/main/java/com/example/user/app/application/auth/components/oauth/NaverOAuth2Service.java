@@ -18,8 +18,8 @@ import com.example.common.util.JwtUtil;
 import com.example.user.app.application.auth.CustomAuthException;
 import com.example.user.app.application.auth.CustomAuthException.AuthErrorCode;
 import com.example.user.app.application.auth.components.SocialOAuth2Service;
-import com.example.user.app.application.auth.dto.oauth.OAuth2Data;
-import com.example.user.app.application.auth.dto.oauth.OAuthRequest;
+import com.example.user.app.application.auth.dto.OAuth2Data;
+import com.example.user.app.application.auth.dto.request.OAuthRequest;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

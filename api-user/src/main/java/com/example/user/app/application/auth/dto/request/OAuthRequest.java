@@ -1,4 +1,4 @@
-package com.example.user.app.application.auth.dto.oauth;
+package com.example.user.app.application.auth.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

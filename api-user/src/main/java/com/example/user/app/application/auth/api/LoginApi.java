@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.common.model.ApiResponse;
-import com.example.user.app.application.auth.dto.oauth.OAuthRequest;
+import com.example.user.app.application.auth.dto.request.OAuthRequest;
 import com.example.user.app.application.auth.dto.request.UserLoginRequest;
 import com.example.user.app.application.auth.dto.response.JwtTokenResponse;
 import com.example.user.app.application.auth.service.AuthService;

@@ -37,15 +37,16 @@ public class JwtTokenProvider {
         String refreshToken = invalidateAndIssueRefreshToken(user);
 
         // 토큰 반환
+        log.info("[TOKEN SUCCESS] New token issued. userId: {}, accessToken: {}, refreshToken: {}", user.getId(), accessToken, refreshToken);
         return new JwtTokenResponse(accessToken, refreshToken);
     }
 
     private String getAccessToken(SecurityUser user) {
 
         Map<String, Object> claims = Map.of(
-            "id", user.id().toString(),
-            "username", user.username(),
-            "permission", user.permission()
+            "id", user.getId().toString(),
+            "username", user.getUsername(),
+            "permission", user.getPermission()
         );
 
         // 새로운 토큰 발급
@@ -53,7 +54,7 @@ public class JwtTokenProvider {
     }
 
     private String reuseOrRenewRefreshToken(SecurityUser user) {
-        return refreshTokenRepository.findByUserId(user.id()).stream()
+        return refreshTokenRepository.findByUserId(user.getId()).stream()
                 .findFirst()
                 .map(token -> {
                     if (!token.isExpiringWithinOneMonth()) {
@@ -67,7 +68,7 @@ public class JwtTokenProvider {
     }
 
     private String invalidateAndIssueRefreshToken(SecurityUser user) {
-        var tokenList = refreshTokenRepository.findByUserId(user.id());
+        var tokenList = refreshTokenRepository.findByUserId(user.getId());
         refreshTokenRepository.deleteAll(tokenList);
 
         return createAndSaveRefreshToken(user);
@@ -76,7 +77,7 @@ public class JwtTokenProvider {
     private String createAndSaveRefreshToken(SecurityUser user) {
         String token = JwtUtil.generateRefreshToken(JwtUtil.REFRESH_TOKEN_TTL);
         RefreshTokenEntity entity = RefreshTokenEntity.builder()
-                .userId(user.id())
+                .userId(user.getId())
                 .refreshToken(token)
                 .expiryAt(JwtUtil.getExpiration(token).toInstant())
                 .build();
