@@ -1,10 +1,12 @@
 package com.example.common.exception;
 
+import lombok.Getter;
+import org.springframework.lang.NonNull;
+
 import java.util.Collections;
 import java.util.Map;
 
-import org.springframework.lang.NonNull;
-
+@Getter
 public class ValidationException extends RuntimeException {
 
     private final Map<String, String> errors;
@@ -12,10 +14,6 @@ public class ValidationException extends RuntimeException {
     public ValidationException(@NonNull Map<String, String> errors) {
         super("");
         this.errors = Collections.unmodifiableMap(errors);
-    }
-
-    public Map<String, String> getErrors() {
-        return errors;
     }
 
 }

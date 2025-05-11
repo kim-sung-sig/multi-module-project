@@ -1,4 +1,4 @@
-package com.example.user.app.application.auth.service;
+package com.example.user.app.application.admin.service;
 
 import org.springframework.stereotype.Service;
 

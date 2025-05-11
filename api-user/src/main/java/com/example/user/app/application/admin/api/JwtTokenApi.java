@@ -1,8 +1,8 @@
 package com.example.user.app.application.admin.api;
 
 import com.example.common.model.ApiResponse;
+import com.example.user.app.application.admin.service.JwtTokenService;
 import com.example.user.app.application.auth.dto.response.JwtTokenResponse;
-import com.example.user.app.application.auth.service.JwtTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.example.user.app.common.config;
+package com.example.user.app.common.config.security;
 
 public interface AccessTokenBlackListProvider {
 

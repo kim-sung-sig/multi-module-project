@@ -1,9 +1,11 @@
 package com.example.common.model;
 
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Setter;
+
 import java.util.List;
 import java.util.UUID;
-
-import lombok.*;
 
 
 @Data

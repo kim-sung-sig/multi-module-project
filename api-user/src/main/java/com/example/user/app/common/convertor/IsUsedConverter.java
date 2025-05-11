@@ -1,11 +1,10 @@
 package com.example.user.app.common.convertor;
 
 import com.example.common.enums.IsUsed;
-
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
-@Converter(autoApply = false)
+@Converter
 public class IsUsedConverter implements AttributeConverter<IsUsed, String> {
 
     @Override

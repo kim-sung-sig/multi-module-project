@@ -2,7 +2,7 @@ package com.example.user.app.application.auth.components;
 
 import com.example.common.util.CommonUtil;
 import com.example.common.util.JwtUtil;
-import com.example.user.app.common.config.AccessTokenBlackListProvider;
+import com.example.user.app.common.config.security.AccessTokenBlackListProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

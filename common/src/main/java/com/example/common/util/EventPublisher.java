@@ -1,9 +1,8 @@
 package com.example.common.util;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-
-import jakarta.annotation.PostConstruct;
 
 @Component
 public class EventPublisher {

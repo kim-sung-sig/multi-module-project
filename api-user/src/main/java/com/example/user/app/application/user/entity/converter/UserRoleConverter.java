@@ -1,11 +1,10 @@
 package com.example.user.app.application.user.entity.converter;
 
 import com.example.user.app.application.user.entity.UserRole;
-
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
-@Converter(autoApply = false)
+@Converter
 public class UserRoleConverter implements AttributeConverter<UserRole, String> {
 
     @Override

@@ -2,9 +2,19 @@ package com.example.user.app.application.auth.api;
 
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.BusinessException;
+import com.example.common.model.ApiResponse;
 import com.example.common.model.SecurityUser;
 import com.example.common.util.CommonUtil;
+import com.example.user.app.application.auth.dto.request.OAuthRequest;
 import com.example.user.app.application.auth.dto.request.TokenRefreshRequest;
+import com.example.user.app.application.auth.dto.request.UserLoginRequest;
+import com.example.user.app.application.auth.dto.response.JwtTokenResponse;
+import com.example.user.app.application.auth.service.AuthService;
+import com.example.user.app.application.auth.service.OAuth2Service;
+import com.example.user.app.common.util.ApiResponseUtil;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,18 +22,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.example.common.model.ApiResponse;
-import com.example.user.app.application.auth.dto.request.OAuthRequest;
-import com.example.user.app.application.auth.dto.request.UserLoginRequest;
-import com.example.user.app.application.auth.dto.response.JwtTokenResponse;
-import com.example.user.app.application.auth.service.AuthService;
-import com.example.user.app.application.auth.service.OAuth2Service;
-import com.example.user.app.common.util.ApiResponseUtil;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController

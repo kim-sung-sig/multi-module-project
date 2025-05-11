@@ -1,27 +1,19 @@
 package com.example.user.app.application.user.entity;
 
-import java.time.Instant;
-import java.util.UUID;
-
+import com.example.common.util.UuidUtil;
+import com.example.user.app.application.user.entity.converter.UserRoleConverter;
+import com.example.user.app.application.user.entity.converter.UserStatusConverter;
+import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.example.common.util.UuidUtil;
-import com.example.user.app.application.user.entity.converter.UserRoleConverter;
-import com.example.user.app.application.user.entity.converter.UserStatusConverter;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import lombok.extern.slf4j.Slf4j;
+import java.time.Instant;
+import java.util.UUID;
 
 @Slf4j
 @Entity

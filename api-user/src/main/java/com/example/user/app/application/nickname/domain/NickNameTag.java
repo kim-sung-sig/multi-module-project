@@ -1,7 +1,6 @@
 package com.example.user.app.application.nickname.domain;
 
 import com.example.common.util.CommonUtil;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;

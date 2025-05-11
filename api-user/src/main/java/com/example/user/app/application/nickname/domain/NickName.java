@@ -1,12 +1,11 @@
 package com.example.user.app.application.nickname.domain;
 
-import java.util.Optional;
-import java.util.function.Supplier;
-
 import com.example.common.util.CommonUtil;
-
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.util.Optional;
+import java.util.function.Supplier;
 
 @EqualsAndHashCode
 @ToString

@@ -1,21 +1,15 @@
 package com.example.user.app.application.auth.entity;
 
+import com.example.common.util.CommonUtil;
+import com.example.common.util.UuidUtil;
+import com.example.user.app.application.user.entity.User;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
-
-import com.example.user.app.application.user.entity.User;
-import jakarta.persistence.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import com.example.common.util.CommonUtil;
-import com.example.common.util.UuidUtil;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @Entity

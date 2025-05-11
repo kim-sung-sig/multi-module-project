@@ -1,11 +1,13 @@
-package com.example.user.app.common.config;
+package com.example.user.app.common.config.security;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
+import com.example.common.model.SecurityUser;
+import com.example.common.util.CommonUtil;
+import com.example.common.util.JwtUtil;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
@@ -17,15 +19,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.example.common.model.SecurityUser;
-import com.example.common.util.CommonUtil;
-import com.example.common.util.JwtUtil;
-
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * 요청으로부터 JWT를 추출하고, 인증 정보를 SecurityContext에 설정하는 필터.
@@ -89,7 +87,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = header.substring(JwtUtil.BEARER_PREFIX.length());
 
-        if (!JwtUtil.validateToken(token)) {
+        if (JwtUtil.invalidToken(token)) {
             logger.warn("JWT 유효성 검사 실패");
             return Optional.empty();
         }

@@ -1,8 +1,7 @@
 package com.example.common.util;
 
-import org.springframework.util.function.ThrowingSupplier;
-
 import com.example.common.interfaces.ThrowingRunable;
+import org.springframework.util.function.ThrowingSupplier;
 
 public final class TryUtil {
 

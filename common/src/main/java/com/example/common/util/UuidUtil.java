@@ -1,8 +1,8 @@
 package com.example.common.util;
 
-import java.util.UUID;
-
 import com.github.f4b6a3.uuid.UuidCreator;
+
+import java.util.UUID;
 
 /*
  * UUIDv7Generator

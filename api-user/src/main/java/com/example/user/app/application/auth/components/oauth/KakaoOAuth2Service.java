@@ -1,9 +1,12 @@
 package com.example.user.app.application.auth.components.oauth;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Map;
-
+import com.example.common.util.CommonUtil;
+import com.example.common.util.JwtUtil;
+import com.example.user.app.application.auth.components.oauth.OAuth2Exception.OAuth2ErrorCode;
+import com.example.user.app.application.auth.dto.request.OAuthRequest;
+import jakarta.annotation.PostConstruct;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -15,17 +18,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
-import com.example.common.exception.TemporaryException;
-import com.example.common.util.JwtUtil;
-import com.example.user.app.application.auth.exception.OAuth2Exception;
-import com.example.user.app.application.auth.exception.OAuth2Exception.AuthErrorCode;
-import com.example.user.app.application.auth.components.SocialOAuth2Service;
-import com.example.user.app.application.auth.dto.OAuth2Data;
-import com.example.user.app.application.auth.dto.request.OAuthRequest;
-
-import jakarta.annotation.PostConstruct;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Map;
 
 @Slf4j
 @Component("kakao")
@@ -46,13 +41,13 @@ public class KakaoOAuth2Service implements SocialOAuth2Service {
     }
 
     @Override
-    public OAuth2Data getUserInfo(OAuthRequest oauthRequest) {
+    public OAuth2Data getUserInfo(OAuthRequest oauthRequest) throws OAuth2Exception {
         String accessToken = this.getAccessToken(oauthRequest);
         return this.getUserInfo(accessToken);
     }
 
     @Override
-    public String getAccessToken(OAuthRequest oauthRequest) {
+    public String getAccessToken(OAuthRequest oauthRequest) throws OAuth2Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", kakaoClientId);
@@ -66,24 +61,32 @@ public class KakaoOAuth2Service implements SocialOAuth2Service {
                 .body(params)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
-                    log.error("4xx error during(get access token) request to Kakao. Request: {}, Response status: {}", req, res.getStatusCode());
-                    throw new OAuth2Exception(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get access token");
+                    log.error("4xx error during(get access token) request to Kakao. Request: {}, Response status: {}, Response: {}", req, res.getStatusCode(), res);
+                    throw new OAuth2Exception(OAuth2ErrorCode.CLIENT, "[Kakao getAccessToken 400 Client Error] Failed to get access token");
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
                     log.error("5xx error during(get access token) request to Kakao. Request: {}, Response status: {}", req, res.getStatusCode());
-                    throw new TemporaryException(5);
+                    throw new OAuth2Exception(OAuth2ErrorCode.PROVIDER, "[Kakao getAccessToken 500 Provider Error] Failed to get access token");
                 })
                 .toEntity(new ParameterizedTypeReference<>() {});
 
         Map<String, Object> body = response.getBody();
+        if (CommonUtil.isEmpty(body) || !body.containsKey("access_token")) {
+            log.error("[Kakao getAccessToken 500 Server Error] Response body is null or missing access_token. Body: {}", body);
+            throw new OAuth2Exception(OAuth2ErrorCode.SERVER, "[Kakao getAccessToken 500 Server Error] 응답에 access_token이 없습니다.");
+        }
 
-        if (body == null) throw new OAuth2Exception(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get access token");
+        Object token = body.get("access_token");
+        if (!(token instanceof String)) {
+            log.error("[Kakao getAccessToken 500 Server Error] access_token 형식이 잘못됨. Value: {}", token);
+            throw new OAuth2Exception(OAuth2ErrorCode.SERVER, "[Kakao getAccessToken 500 Server Error] access_token 형식 오류");
+        }
 
-        return (String) body.get("access_token");
+        return (String) token;
     }
 
     @Override
-    public OAuth2Data getUserInfo(String accessToken) {
+    public OAuth2Data getUserInfo(String accessToken) throws OAuth2Exception {
         ResponseEntity<Map<String, Object>> response = restClient.get()
                 .uri("https://kapi.kakao.com/v2/user/me")
                 .header(HttpHeaders.AUTHORIZATION, JwtUtil.BEARER_PREFIX + accessToken)
@@ -91,17 +94,19 @@ public class KakaoOAuth2Service implements SocialOAuth2Service {
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
                     log.error("4xx error during(get userInfo) request to Kakao. Request: {}, Response status: {}, Response: {}", req, res.getStatusCode(), res);
-                    throw new OAuth2Exception(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get userInfo");
+                    throw new OAuth2Exception(OAuth2ErrorCode.CLIENT, "[Kakao getUserInfo 400 Client Error] Failed to get userInfo");
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
                     log.error("5xx error during(get userInfo) request to Kakao. Request: {}, Response status: {}, Response: {}", req, res.getStatusCode(), res);
-                    throw new TemporaryException(5);
+                    throw new OAuth2Exception(OAuth2ErrorCode.PROVIDER, "[Kakao getUserInfo 500 Provider Error] Failed to get userInfo");
                 })
                 .toEntity(new ParameterizedTypeReference<>() {});
 
         Map<String, Object> body = response.getBody();
-
-        if (body == null) throw new OAuth2Exception(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get userInfo");
+        if (CommonUtil.isEmpty(body) || !body.containsKey("access_token")) {
+            log.error("[Kakao getUserInfo 500 Server Error] Response body is null. Body: {}", body);
+            throw new OAuth2Exception(OAuth2ErrorCode.SERVER, "[Kakao getUserInfo 500 Server Error] 응답이 없습니다.");
+        }
 
         return new KakaoOAuth2Data(body);
     }

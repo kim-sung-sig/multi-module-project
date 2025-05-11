@@ -1,9 +1,9 @@
 package com.example.common.model;
 
-import java.util.Map;
-
 import com.example.common.enums.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ApiResponse<T>(

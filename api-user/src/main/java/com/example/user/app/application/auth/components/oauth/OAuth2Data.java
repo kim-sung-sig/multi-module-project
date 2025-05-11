@@ -1,4 +1,4 @@
-package com.example.user.app.application.auth.dto;
+package com.example.user.app.application.auth.components.oauth;
 
 public interface OAuth2Data {
 

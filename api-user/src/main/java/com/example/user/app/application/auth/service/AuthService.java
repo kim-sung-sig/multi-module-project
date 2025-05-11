@@ -1,25 +1,23 @@
 package com.example.user.app.application.auth.service;
 
-import java.util.UUID;
-
-import com.example.user.app.application.auth.dto.SecurityUserDetail;
-import com.example.user.app.common.config.AccessTokenBlackListProvider;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.BusinessException;
 import com.example.common.util.CommonUtil;
 import com.example.common.util.JwtUtil;
 import com.example.user.app.application.auth.components.JwtTokenProvider;
 import com.example.user.app.application.auth.components.LoginComponent;
+import com.example.user.app.application.auth.dto.SecurityUserDetail;
 import com.example.user.app.application.auth.dto.response.JwtTokenResponse;
 import com.example.user.app.application.auth.entity.RefreshTokenEntity;
 import com.example.user.app.application.auth.repository.RefreshTokenRepository;
-
+import com.example.user.app.common.config.security.AccessTokenBlackListProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -75,7 +73,7 @@ public class AuthService {
         }
 
         // 2. 토큰 검증 실패 시 401 에러
-        if (!JwtUtil.validateToken(refreshToken)) {
+        if (JwtUtil.invalidToken(refreshToken)) {
             log.debug("[TOKEN ERROR] Refresh token({}) is invalid or expired", refreshToken);
             throw exception;
         }

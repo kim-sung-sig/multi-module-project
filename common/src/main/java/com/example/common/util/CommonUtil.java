@@ -1,9 +1,9 @@
 package com.example.common.util;
 
-import java.util.Arrays;
-
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+
+import java.util.Arrays;
 
 public class CommonUtil {
 
