@@ -41,8 +41,8 @@ public class NaverOAuth2Service implements SocialOAuth2Service {
 
     @PostConstruct
     public void init() {
-        log.debug("naverClientId: " + naverClientId);
-        log.debug("naverClientSecret: " + naverClientSecret);
+        log.debug("naverClientId: {}", naverClientId);
+        log.debug("naverClientSecret: {}", naverClientSecret);
     }
 
     @Override
