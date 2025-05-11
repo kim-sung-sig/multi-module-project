@@ -1,13 +1,13 @@
-package com.example.user.app.application.nickname;
-
-import org.springframework.stereotype.Service;
+package com.example.user.app.application.nickname.service;
 
 import com.example.user.app.application.nickname.domain.NickName;
 import com.example.user.app.application.nickname.domain.NickNameTag;
+import com.example.user.app.application.nickname.entity.NickNameStorage;
+import com.example.user.app.application.nickname.repository.NickNameHistoryRepository;
 import com.example.user.app.application.user.entity.User;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service

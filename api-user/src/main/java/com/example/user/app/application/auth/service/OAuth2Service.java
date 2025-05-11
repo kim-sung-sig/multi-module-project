@@ -1,35 +1,27 @@
 package com.example.user.app.application.auth.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Random;
-
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Service;
-
 import com.example.common.model.SecurityUser;
-import com.example.user.app.application.auth.exception.OAuth2Exception;
-import com.example.user.app.application.auth.exception.OAuth2Exception.AuthErrorCode;
 import com.example.user.app.application.auth.components.JwtTokenProvider;
 import com.example.user.app.application.auth.components.SocialOAuth2Service;
 import com.example.user.app.application.auth.dto.OAuth2Data;
 import com.example.user.app.application.auth.dto.request.OAuthRequest;
 import com.example.user.app.application.auth.dto.response.JwtTokenResponse;
-import com.example.user.app.application.nickname.NickNameTagGenerator;
+import com.example.user.app.application.auth.exception.OAuth2Exception;
+import com.example.user.app.application.auth.exception.OAuth2Exception.AuthErrorCode;
 import com.example.user.app.application.nickname.domain.NickName;
 import com.example.user.app.application.nickname.domain.NickNameTag;
+import com.example.user.app.application.nickname.service.NickNameTagGenerator;
 import com.example.user.app.application.user.entity.User;
 import com.example.user.app.application.user.entity.UserRole;
 import com.example.user.app.application.user.entity.UserStatus;
 import com.example.user.app.application.user.repository.UserRepository;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
 
 @Slf4j
 @Service

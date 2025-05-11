@@ -1,23 +1,10 @@
-package com.example.user.app.application.nickname;
-
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+package com.example.user.app.application.nickname.entity;
 
 import com.example.user.app.application.nickname.domain.NickName;
 import com.example.user.app.application.nickname.domain.NickNameTag;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
