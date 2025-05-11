@@ -13,6 +13,10 @@ public record ApiResponse<T>(
     Map<String, Object> errors
 ) {
 
+    public static <Void> ApiResponse<Void> ok() {
+        return ok(null);
+    }
+
     public static <T> ApiResponse<T> ok(T data) {
         return new ApiResponse<>(
             200,

@@ -10,11 +10,15 @@ import com.example.common.model.ApiResponse;
 
 public class ApiResponseUtil {
 
-    public static <T> ResponseEntity<ApiResponse<T>> ok(T data) {
-        return ResponseEntity.ok(ApiResponse.<T>ok(data));
+    public static ResponseEntity<ApiResponse<Void>> ok() {
+        return ResponseEntity.ok(ApiResponse.ok());
     }
 
-    public static <T> ResponseEntity<ApiResponse<Void>> error(ErrorCode errorCode, Map<String, Object> errors) {
+    public static <T> ResponseEntity<ApiResponse<T>> ok(T data) {
+        return ResponseEntity.ok(ApiResponse.ok(data));
+    }
+
+    public static ResponseEntity<ApiResponse<Void>> error(ErrorCode errorCode, Map<String, Object> errors) {
         return ResponseEntity
             .status(HttpStatus.valueOf(errorCode.getCode()))
             .body(ApiResponse.error(errorCode, errors));

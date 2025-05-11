@@ -20,4 +20,6 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity
 
     boolean existsByUserId(UUID userId);
 
+    void deleteByRefreshToken(String refreshToken);
+    void deleteByUserId(UUID userId);
 }

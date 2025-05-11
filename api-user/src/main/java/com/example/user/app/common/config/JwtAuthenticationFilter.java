@@ -38,6 +38,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private final AccessTokenBlackListProvider accessTokenBlackListProvider;
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
@@ -56,10 +58,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        Optional<String> token = resolveToken(request);
-        Optional<JwtUserDetails> extractUserDetailsFromToken = token.flatMap(this::extractUserDetailsFromToken);
-        Optional<Authentication> authentication = extractUserDetailsFromToken.flatMap(this::buildAuthentication);
-        authentication.ifPresent(this::setAuthentication);
+        // 토큰 추출
+        resolveToken(request)
+                // 블랙리스트 에 존재 검사
+                .filter(this::isNotBlack)
+                // 토큰으로 부터 유저정보 획득
+                .flatMap(this::extractUserDetailsFromToken)
+                // 유저 정보를 기반으로 인증객체 생성
+                .flatMap(this::buildAuthentication)
+                // 인증객체 시큐리티 등록
+                .ifPresent(this::setAuthentication);
 
         filterChain.doFilter(request, response);
     }
@@ -88,6 +96,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         logger.debug("JWT 유효성 검사 통과");
         return Optional.of(token);
+    }
+
+    /**
+     * accessToken이 블랙리스트에 포함되있는지 확인
+     */
+    private boolean isNotBlack(String token) {
+        return !accessTokenBlackListProvider.isBlack(token);
     }
 
     /**
@@ -138,7 +153,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .collect(Collectors.toList());
 
             logger.info("Authentication 객체 생성 완료 - SecurityContext에 등록 예정");
-            return Optional.of(new UsernamePasswordAuthenticationToken(principal, jwtUserDetails.token(), authorities));
+            return Optional.of(new UsernamePasswordAuthenticationToken(
+                    principal,
+                    jwtUserDetails.token(),
+                    authorities));
 
         } catch (Exception e) {
             logger.error("Authentication 객체 생성 실패", e);

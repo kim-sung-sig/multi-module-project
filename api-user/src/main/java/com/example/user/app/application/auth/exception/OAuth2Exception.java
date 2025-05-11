@@ -1,13 +1,13 @@
-package com.example.user.app.application.auth;
+package com.example.user.app.application.auth.exception;
 
 import lombok.Getter;
 
 @Getter
-public class CustomAuthException extends RuntimeException{
+public class OAuth2Exception extends RuntimeException{
 
     private final AuthErrorCode code;
 
-    public CustomAuthException(AuthErrorCode code, String message) {
+    public OAuth2Exception(AuthErrorCode code, String message) {
         super(message);
         this.code = code;
     }

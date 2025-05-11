@@ -17,8 +17,8 @@ import org.springframework.web.client.RestClient;
 
 import com.example.common.exception.TemporaryException;
 import com.example.common.util.JwtUtil;
-import com.example.user.app.application.auth.CustomAuthException;
-import com.example.user.app.application.auth.CustomAuthException.AuthErrorCode;
+import com.example.user.app.application.auth.exception.OAuth2Exception;
+import com.example.user.app.application.auth.exception.OAuth2Exception.AuthErrorCode;
 import com.example.user.app.application.auth.components.SocialOAuth2Service;
 import com.example.user.app.application.auth.dto.OAuth2Data;
 import com.example.user.app.application.auth.dto.request.OAuthRequest;
@@ -41,8 +41,8 @@ public class KakaoOAuth2Service implements SocialOAuth2Service {
 
     @PostConstruct
     public void init() {
-        log.debug("kakaoClientId: " + kakaoClientId);
-        log.debug("kakaoClientSecret: " + kakaoClientSecret);
+        log.debug("kakaoClientId: {}", kakaoClientId);
+        log.debug("kakaoClientSecret: {}", kakaoClientSecret);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class KakaoOAuth2Service implements SocialOAuth2Service {
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
                     log.error("4xx error during(get access token) request to Kakao. Request: {}, Response status: {}", req, res.getStatusCode());
-                    throw new CustomAuthException(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get access token");
+                    throw new OAuth2Exception(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get access token");
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
                     log.error("5xx error during(get access token) request to Kakao. Request: {}, Response status: {}", req, res.getStatusCode());
@@ -77,10 +77,9 @@ public class KakaoOAuth2Service implements SocialOAuth2Service {
 
         Map<String, Object> body = response.getBody();
 
-        if (body == null) throw new CustomAuthException(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get access token");
+        if (body == null) throw new OAuth2Exception(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get access token");
 
-        String accessToken = (String) body.get("access_token");
-        return accessToken;
+        return (String) body.get("access_token");
     }
 
     @Override
@@ -92,7 +91,7 @@ public class KakaoOAuth2Service implements SocialOAuth2Service {
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
                     log.error("4xx error during(get userInfo) request to Kakao. Request: {}, Response status: {}, Response: {}", req, res.getStatusCode(), res);
-                    throw new CustomAuthException(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get userInfo");
+                    throw new OAuth2Exception(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get userInfo");
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
                     log.error("5xx error during(get userInfo) request to Kakao. Request: {}, Response status: {}, Response: {}", req, res.getStatusCode(), res);
@@ -102,7 +101,7 @@ public class KakaoOAuth2Service implements SocialOAuth2Service {
 
         Map<String, Object> body = response.getBody();
 
-        if (body == null) throw new CustomAuthException(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get userInfo");
+        if (body == null) throw new OAuth2Exception(AuthErrorCode.OAUTH2_AUTH_FAILED, "Failed to get userInfo");
 
         return new KakaoOAuth2Data(body);
     }

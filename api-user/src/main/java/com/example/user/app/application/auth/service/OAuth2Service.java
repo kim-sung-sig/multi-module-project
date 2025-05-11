@@ -8,13 +8,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 
-import com.example.user.app.application.auth.components.LoginComponent;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.example.common.model.SecurityUser;
-import com.example.user.app.application.auth.CustomAuthException;
-import com.example.user.app.application.auth.CustomAuthException.AuthErrorCode;
+import com.example.user.app.application.auth.exception.OAuth2Exception;
+import com.example.user.app.application.auth.exception.OAuth2Exception.AuthErrorCode;
 import com.example.user.app.application.auth.components.JwtTokenProvider;
 import com.example.user.app.application.auth.components.SocialOAuth2Service;
 import com.example.user.app.application.auth.dto.OAuth2Data;
@@ -42,7 +41,6 @@ public class OAuth2Service {
     private final JwtTokenProvider jwtTokenProvider;              // jwt component
     private final NickNameTagGenerator nickNameTagGenerator;        // nickName component
 
-    private final LoginComponent loginComponent;
     private final Map<String, SocialOAuth2Service> socialServices;  // oauth2 component
 
     @Transactional
@@ -76,14 +74,14 @@ public class OAuth2Service {
 
         return Optional.ofNullable(socialServices.get(provider))
                 .map(service -> service.getUserInfo(oauthRequest))
-                .orElseThrow(() -> new CustomAuthException(AuthErrorCode.OAUTH2_AUTH_FAILED, "지원하지 않는 소셜 로그인입니다."));
+                .orElseThrow(() -> new OAuth2Exception(AuthErrorCode.OAUTH2_AUTH_FAILED, "지원하지 않는 소셜 로그인입니다."));
     }
 
     private User saveOrUpdateUserAndGet(@NonNull OAuth2Data oauth2Data) {
         User user = findOrCreateUser(oauth2Data);
-        User saved = userRepository.save(user);
+        userRepository.save(user);
 
-        return saved;
+        return user;
     }
 
     private User findOrCreateUser(OAuth2Data oauth2Data) {

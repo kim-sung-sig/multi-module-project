@@ -16,7 +16,6 @@ import com.example.common.exception.BusinessException;
 import com.example.common.exception.TemporaryException;
 import com.example.common.exception.ValidationException;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,6 +71,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
+                .filter(error -> error.getDefaultMessage() != null)
                 .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 
         Map<String, Object> body = createErrorResponse("VALIDATION_ERROR", "입력값이 올바르지 않습니다.", errors);
@@ -84,13 +84,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(ValidationException e) {
         Map<String, Object> body = createErrorResponse("VALIDATION_ERROR", "입력값이 올바르지 않습니다.", e.getErrors());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
-
-    // EntityNotFoundException 처리
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleEntityNotFoundException(EntityNotFoundException e) {
-        Map<String, Object> body = createErrorResponse("ENTITY_NOT_FOUND", e.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
     // 일시적인 예외 처리
