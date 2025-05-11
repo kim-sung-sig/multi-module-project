@@ -21,20 +21,21 @@ import java.util.UUID;
         @Index(name = "idx_password_history_created_at", columnList = "created_at"),
     }
 )
+@Data
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
-@Getter @ToString @EqualsAndHashCode
 public class PasswordHistory {
 
     @Id
     private UUID id;
 
-    @Column(name = "user_id", nullable = false)
+    @Setter(AccessLevel.NONE)
+    @Column(name = "user_id", nullable = false, insertable = false, updatable = false)
     private UUID userId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Column(name = "password")

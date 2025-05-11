@@ -23,12 +23,13 @@ public class UserNickNameHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter(AccessLevel.NONE)
+    @Column(name = "user_id", nullable = false, insertable = false, updatable = false)
+    private UUID userId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
-    @Column(name = "user_id")
-    private UUID userId;
 
     @Column(name = "nick_name", nullable = false)
     private String nickName;

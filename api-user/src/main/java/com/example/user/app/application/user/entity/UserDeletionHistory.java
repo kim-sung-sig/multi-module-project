@@ -2,10 +2,10 @@ package com.example.user.app.application.user.entity;
 
 import com.example.common.util.GsonProvider;
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import org.hibernate.annotations.Comment;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -17,8 +17,10 @@ import java.util.UUID;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "user_deletion_history")
+@Data
+@AllArgsConstructor
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
-@Getter @ToString @EqualsAndHashCode
+@Builder
 public class UserDeletionHistory {
 
     @Id

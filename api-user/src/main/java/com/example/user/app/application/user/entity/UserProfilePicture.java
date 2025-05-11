@@ -3,7 +3,10 @@ package com.example.user.app.application.user.entity;
 import com.example.common.enums.IsUsed;
 import com.example.user.app.common.convertor.IsUsedConverter;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -17,7 +20,7 @@ import java.util.UUID;
     indexes = {
         @Index(name = "idx_user_profile_picture_user_id", columnList = "user_id"),
         @Index(name = "idx_user_profile_picture_status", columnList = "status"),})
-@Getter @ToString @EqualsAndHashCode
+@Data
 @AllArgsConstructor
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Builder
@@ -26,11 +29,11 @@ public class UserProfilePicture {
     @Id
     private UUID id;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = false, insertable = false, updatable = false)
     private UUID userId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Column(name = "status", nullable = false)

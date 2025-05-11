@@ -23,7 +23,8 @@ public class RefreshTokenEntity {
     @Id
     private UUID id;
 
-    @Column(name = "user_id", nullable = false)
+    @Setter(AccessLevel.NONE)
+    @Column(name = "user_id", nullable = false, insertable = false, updatable = false)
     private UUID userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
