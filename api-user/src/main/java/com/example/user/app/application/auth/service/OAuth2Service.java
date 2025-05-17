@@ -1,7 +1,7 @@
 package com.example.user.app.application.auth.service;
 
 import com.example.common.enums.ErrorCode;
-import com.example.common.exception.BusinessException;
+import com.example.common.exception.BaseException;
 import com.example.common.exception.TemporaryException;
 import com.example.common.model.SecurityUser;
 import com.example.user.app.application.auth.components.JwtTokenProvider;
@@ -69,16 +69,16 @@ public class OAuth2Service {
 
             return Optional.ofNullable(socialServices.get(provider))
                     .map(service -> service.getUserInfo(oauthRequest))
-                    .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_INPUT_REQUEST, "지원하지 않는 소셜 로그인입니다."));
+                    .orElseThrow(() -> new BaseException(ErrorCode.INVALID_INPUT_REQUEST, "지원하지 않는 소셜 로그인입니다."));
 
         }
         catch (OAuth2Exception e) {
             log.error("소셜 로그인 실패", e);
             switch (e.getErrorCode()) {
-                case CLIENT -> throw new BusinessException(ErrorCode.INVALID_INPUT_REQUEST, e);
+                case CLIENT -> throw new BaseException(ErrorCode.INVALID_INPUT_REQUEST, e);
                 case PROVIDER -> throw new TemporaryException(5);
-                case SERVER -> throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "소셜 로그인 서버 오류");
-                default -> throw new BusinessException(ErrorCode.INVALID_INPUT_REQUEST, "소셜 로그인 서버 오류");
+                case SERVER -> throw new BaseException(ErrorCode.INTERNAL_SERVER_ERROR, "소셜 로그인 서버 오류");
+                default -> throw new BaseException(ErrorCode.INVALID_INPUT_REQUEST, "소셜 로그인 서버 오류");
             }
         }
     }

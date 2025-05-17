@@ -1,6 +1,5 @@
 package com.example.user.app.application.auth.components;
 
-import com.example.common.model.SecurityUser;
 import com.example.common.util.EventPublisher;
 import com.example.user.app.application.auth.dto.SecurityUserDetail;
 import com.example.user.app.application.user.entity.User;
@@ -36,7 +35,7 @@ public class LoginComponent {
      * 로그인 성공시 호출
      */
     @Transactional
-    public void loginSuccess(SecurityUser securityUser) {
+    public void loginSuccess(SecurityUserDetail securityUser) {
         Optional<User> userOpt = userRepository.findById(securityUser.getId());
 
         if (userOpt.isEmpty()) return;
@@ -53,7 +52,7 @@ public class LoginComponent {
      * 로그인 실패시 호출
      */
     @Transactional
-    public void loginFail(SecurityUser securityUser) {
+    public void loginFail(SecurityUserDetail securityUser) {
         Optional<User> userOpt = userRepository.findById(securityUser.getId());
 
         if (userOpt.isEmpty()) return;

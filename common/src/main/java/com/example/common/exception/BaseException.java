@@ -9,18 +9,24 @@ import lombok.Getter;
  * 403 : 권한 오류
  */
 @Getter
-public class BusinessException extends RuntimeException {
+public class BaseException extends RuntimeException {
 
     private final ErrorCode errorCode;
     private final String messageDetail;
 
-    public BusinessException(ErrorCode errorCode, Throwable cause) {
+    public BaseException(ErrorCode errorCode) {
+        super(errorCode.getLogMessage());
+        this.errorCode = errorCode;
+        this.messageDetail = null;
+    }
+
+    public BaseException(ErrorCode errorCode, Throwable cause) {
         super(errorCode.getLogMessage(), cause);
         this.errorCode = errorCode;
         this.messageDetail = cause.getMessage();
     }
 
-    public BusinessException(ErrorCode errorCode, String messageDetail) {
+    public BaseException(ErrorCode errorCode, String messageDetail) {
         super(errorCode.getLogMessage());
         this.errorCode = errorCode;
         this.messageDetail = messageDetail;

@@ -1,14 +1,16 @@
 package com.example.user.app.application.auth.api;
 
 import com.example.common.enums.ErrorCode;
-import com.example.common.exception.BusinessException;
+import com.example.common.exception.BaseException;
 import com.example.common.model.ApiResponse;
 import com.example.common.model.SecurityUser;
 import com.example.common.util.CommonUtil;
+import com.example.user.app.application.auth.dto.UsernamePassword;
 import com.example.user.app.application.auth.dto.request.OAuthRequest;
 import com.example.user.app.application.auth.dto.request.TokenRefreshRequest;
 import com.example.user.app.application.auth.dto.request.UserLoginRequest;
 import com.example.user.app.application.auth.dto.response.JwtTokenResponse;
+import com.example.user.app.application.auth.entity.Device;
 import com.example.user.app.application.auth.service.AuthService;
 import com.example.user.app.application.auth.service.OAuth2Service;
 import com.example.user.app.common.util.ApiResponseUtil;
@@ -39,7 +41,7 @@ public class AuthApi {
     public ResponseEntity<ApiResponse< JwtTokenResponse >> login(@Valid @RequestBody UserLoginRequest loginRequest) {
         log.debug("login request : {}", loginRequest);
 
-        JwtTokenResponse token = authService.loginWithUsernameAndPassword(loginRequest.username(), loginRequest.password());
+        JwtTokenResponse token = authService.loginWithUsernameAndPassword(new UsernamePassword(loginRequest.username(), loginRequest.password()), new Device());
         log.debug("login response : {}", token);
 
         return ApiResponseUtil.ok(token);
@@ -79,7 +81,7 @@ public class AuthApi {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (CommonUtil.isEmpty(authentication) || !authentication.isAuthenticated() || isAnonymous(authentication)) {
-            throw new BusinessException(ErrorCode.UNAUTHORIZED, "인증되지 않은 요청입니다.");
+            throw new BaseException(ErrorCode.UNAUTHORIZED, "인증되지 않은 요청입니다.");
         }
 
         Object principalObj = authentication.getPrincipal();
@@ -87,12 +89,12 @@ public class AuthApi {
 
         // principal 타입 검사
         if (!(principalObj instanceof SecurityUser)) {
-            throw new BusinessException(ErrorCode.UNAUTHORIZED, "잘못된 사용자 정보입니다.");
+            throw new BaseException(ErrorCode.UNAUTHORIZED, "잘못된 사용자 정보입니다.");
         }
 
         // credentials 타입 검사 (예: JWT 토큰)
         if (!(credentialsObj instanceof String)) {
-            throw new BusinessException(ErrorCode.UNAUTHORIZED, "유효하지 않은 인증 정보입니다.");
+            throw new BaseException(ErrorCode.UNAUTHORIZED, "유효하지 않은 인증 정보입니다.");
         }
 
         SecurityUser principal = (SecurityUser) authentication.getPrincipal();

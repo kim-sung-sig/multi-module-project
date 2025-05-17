@@ -1,6 +1,6 @@
 package com.example.user.app.common.handler;
 
-import com.example.common.exception.BusinessException;
+import com.example.common.exception.BaseException;
 import com.example.common.exception.TemporaryException;
 import com.example.common.exception.ValidationException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -96,8 +96,8 @@ public class GlobalExceptionHandler {
     }
 
     // BusinessException 예외
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException e) {
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity<Map<String, Object>> handleBusinessException(BaseException e) {
         Map<String, Object> body = createErrorResponse("BUSINESS_ERROR", e.getMessage());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }

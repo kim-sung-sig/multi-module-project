@@ -12,7 +12,7 @@ public class CommonUtil {
             return true;
 
         if (obj instanceof String str)
-            return !StringUtils.hasText(str);
+            return !StringUtils.hasText(str.trim());
 
         return ObjectUtils.isEmpty(obj);
     }
@@ -23,6 +23,14 @@ public class CommonUtil {
 
     public static boolean hasBlank(String str) {
         return StringUtils.containsWhitespace(str);
+    }
+
+    public static String trim(String str) {
+        return str == null ? null : str.trim();
+    }
+
+    public static String normalize(String str) {
+        return trim(str);  // 확장 포인트
     }
 
 }

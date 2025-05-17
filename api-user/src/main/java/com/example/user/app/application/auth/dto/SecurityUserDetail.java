@@ -2,11 +2,16 @@ package com.example.user.app.application.auth.dto;
 
 import com.example.common.model.SecurityUser;
 import com.example.user.app.application.user.entity.User;
+import com.example.user.app.application.user.entity.UserRole;
+import com.example.user.app.application.user.entity.UserStatus;
+import com.example.user.app.common.util.PasswordUtils;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
 import java.util.Collections;
+import java.util.UUID;
 
 @Getter
 @ToString(callSuper = true)
@@ -34,6 +39,33 @@ public class SecurityUserDetail extends SecurityUser {
             }
         }
 
+    }
+
+    public static SecurityUserDetail dummy() {
+        DummyUser dummyUser = new DummyUser();
+        dummyUser.setId(UUID.randomUUID());
+        dummyUser.setUsername("dummy");
+        dummyUser.setPassword(PasswordUtils.encode("dummy")); // 비밀번호 보안정책상 5글자는 허용안됨
+        dummyUser.setRole(UserRole.ROLE_USER);
+        dummyUser.setStatus(UserStatus.ENABLED);
+        dummyUser.setDummy(true);
+
+        return new SecurityUserDetail(dummyUser);
+    }
+
+    public DummyUser toUser() {
+        DummyUser dummyUser = new DummyUser();
+        dummyUser.setId(this.getId());
+        dummyUser.setUsername(this.getUsername());
+        dummyUser.setPassword(this.getPassword());
+        dummyUser.setDummy(true);
+        return dummyUser;
+    }
+
+    @Data
+    @EqualsAndHashCode(callSuper = true)
+    public static class DummyUser extends User {
+        boolean isDummy = true;
     }
 
 }

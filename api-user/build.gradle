@@ -18,6 +18,9 @@ dependencies {
 	// postgreSQL
 	implementation 'org.postgresql:postgresql'
 
+	// h2
+	implementation 'com.h2database:h2'
+
 	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
 
 	// spring data jpa
@@ -35,5 +38,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
 
 }
