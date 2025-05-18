@@ -1,6 +1,6 @@
 package com.example.common.exception;
 
-import com.example.common.enums.ErrorCode;
+import com.example.common.interfaces.ErrorCode;
 import lombok.Getter;
 
 /*

@@ -47,13 +47,13 @@ public class NaverOAuth2Service implements SocialOAuth2Service {
     }
 
     @Override
-    public String getAccessToken(OAuthRequest oauthRequest) throws OAuth2Exception {
+    public String getAccessToken(OAuthRequest oauthRequestWrapper) throws OAuth2Exception {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", naverClientId);
         params.add("client_secret", naverClientSecret);
-        params.add("code", oauthRequest.code());
-        params.add("state", oauthRequest.state());
+        params.add("code", oauthRequestWrapper.code());
+        params.add("state", oauthRequestWrapper.state());
 
         ResponseEntity<Map<String, Object>> response = restClient.post()
                 .uri("https://nid.naver.com/oauth2.0/token")

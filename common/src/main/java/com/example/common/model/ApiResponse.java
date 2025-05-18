@@ -1,6 +1,6 @@
 package com.example.common.model;
 
-import com.example.common.enums.ErrorCode;
+import com.example.common.interfaces.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.Map;
@@ -26,10 +26,10 @@ public record ApiResponse<T>(
         );
     }
 
-    public static ApiResponse<Void> error(ErrorCode errorCode, Map<String, Object> errors) {
+    public static ApiResponse<Void> error(ErrorCode commonErrorCode, Map<String, Object> errors) {
         return new ApiResponse<>(
-            errorCode.getCode(),
-            errorCode.getLogMessage(),
+            commonErrorCode.getCode(),
+            commonErrorCode.getLogMessage(),
             null,
             errors
         );

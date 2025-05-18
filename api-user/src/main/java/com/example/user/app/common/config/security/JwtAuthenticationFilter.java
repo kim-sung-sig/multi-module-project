@@ -1,8 +1,14 @@
 package com.example.user.app.common.config.security;
 
+import com.example.common.enums.CommonErrorCode;
+import com.example.common.exception.BaseException;
+import com.example.common.model.ApiResponse;
 import com.example.common.model.SecurityUser;
 import com.example.common.util.CommonUtil;
 import com.example.common.util.JwtUtil;
+import com.example.common.util.ObjectMapperUtil;
+import com.example.user.app.application.auth.domain.Device;
+import com.example.user.app.common.enums.AuthErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,7 +27,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -36,19 +45,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final AccessTokenBlackListProvider accessTokenBlackListProvider;
-
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    /**
-     * JWT 인증 필터의 핵심 로직을 수행한다.
-     * <ol>
-     *     <li>Authorization 헤더에서 JWT 추출</li>
-     *     <li>JWT에서 사용자 정보 파싱</li>
-     *     <li>사용자 정보를 기반으로 Authentication 생성</li>
-     *     <li>SecurityContext에 인증 정보 등록</li>
-     * </ol>
-     */
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -56,28 +54,63 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // 토큰 추출
-        resolveToken(request)
-                // 블랙리스트 에 존재 검사
-                .filter(this::isNotBlack)
-                // 토큰으로 부터 유저정보 획득
-                .flatMap(this::extractUserDetailsFromToken)
-                // 유저 정보를 기반으로 인증객체 생성
-                .flatMap(this::buildAuthentication)
-                // 인증객체 시큐리티 등록
-                .ifPresent(this::setAuthentication);
+        try {
+            String token = resolveToken(request);                                       // 1. JWT 추출 + 디바이스 검증
+            JwtUserDetails userDetails = extractUserDetailsFromToken(token);            // 2. 사용자 정보 추출
+            Authentication authentication = buildAuthentication(userDetails);           // 3. 인증 객체 생성
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+        catch (BaseException e) {
+            setErrorResponse(response, e);
+            return;
+        }
+        catch (Exception e) {
+            logger.error("JWT 인증 필터에서 예외 발생", e);
+            setErrorResponse(response, e);
+            return;
+        }
 
         filterChain.doFilter(request, response);
     }
 
     /**
-     * Authorization 헤더에서 JWT를 추출하고 유효성을 검사한다.
-     *
-     * @param request HttpServletRequest
-     * @return 유효한 JWT 문자열 (없을 경우 Optional.empty)
+     * JWT 추출 및 디바이스 정보 일치 검증
      */
-    private Optional<String> resolveToken(HttpServletRequest request) {
-        logger.debug("Authorization 헤더에서 JWT 추출 시도");
+    private String resolveToken(HttpServletRequest request) {
+        String token = extractTokenFromHeader(request)
+                .orElseThrow(() -> {
+                    logger.warn("Authorization 헤더에서 JWT 추출 실패");
+                    return new BaseException(AuthErrorCode.UNAUTHORIZED_BAD_CREDENTIALS_ACCESS_TOKEN_NOT_FOUND);
+                });
+
+        Device reqDevice = extractDeviceFromHeader(request)
+                .orElseThrow(() -> {
+                    logger.warn("디바이스 정보 추출 실패");
+                    return new BaseException(AuthErrorCode.UNAUTHORIZED_DEVICE_NOT_FOUND);
+                });
+
+        if (JwtUtil.invalidToken(token) || CommonUtil.isEmpty(JwtUtil.getUserId(token))) {
+            logger.warn("JWT 유효성 검사 실패");
+            throw new BaseException(AuthErrorCode.UNAUTHORIZED_INVALID_TOKEN);
+        }
+
+        Map<String, Object> claims = JwtUtil.getClaimsMap(token);
+        Device tokenDevice = ObjectMapperUtil.getInstance().convertValue(claims.get("device"), Device.class);
+
+        if (!reqDevice.equals(tokenDevice)) {
+            logger.warn("디바이스 정보 불일치: 요청 디바이스={}, JWT 디바이스={}", reqDevice, tokenDevice);
+            throw new BaseException(AuthErrorCode.UNAUTHORIZED_INVALID_TOKEN_DEVICE_MISMATCH);
+        }
+
+        logger.debug("JWT 유효성 검사 통과");
+        return token;
+    }
+
+    /**
+     * Authorization 헤더에서 JWT 추출
+     */
+    private Optional<String> extractTokenFromHeader(HttpServletRequest request) {
+        logger.debug("JWT 추출 시도");
 
         String header = request.getHeader(JwtUtil.AUTHORIZATION);
         if (CommonUtil.isEmpty(header) || !header.startsWith(JwtUtil.BEARER_PREFIX)) {
@@ -85,90 +118,92 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return Optional.empty();
         }
 
-        String token = header.substring(JwtUtil.BEARER_PREFIX.length());
+        return Optional.of(header.substring(JwtUtil.BEARER_PREFIX.length()));
+    }
 
-        if (JwtUtil.invalidToken(token)) {
-            logger.warn("JWT 유효성 검사 실패");
+    /**
+     * 요청 헤더에서 디바이스 정보 추출
+     */
+    private Optional<Device> extractDeviceFromHeader(HttpServletRequest request) {
+        logger.debug("Device 추출 시도");
+
+        String deviceId = request.getHeader("Device-Id");
+        String platform = request.getHeader("Platform");
+        String browser = request.getHeader("Browser");
+
+        if (CommonUtil.hasEmpty(deviceId, platform, browser)) {
+            logger.warn("디바이스 헤더 정보 부족 deviceId={}, platform={}, browser={}", deviceId, platform, browser);
             return Optional.empty();
         }
 
-        logger.debug("JWT 유효성 검사 통과");
-        return Optional.of(token);
+        return Optional.of(new Device(deviceId, platform, browser));
     }
 
     /**
-     * accessToken이 블랙리스트에 포함되있는지 확인
+     * Jwt 에서 사용자 정보 추출
      */
-    private boolean isNotBlack(String token) {
-        return !accessTokenBlackListProvider.isBlack(token);
-    }
+    private JwtUserDetails extractUserDetailsFromToken(String token) {
+        logger.debug("Jwt 에서 사용자 정보 추출 시도");
 
-    /**
-     * JWT에서 사용자 정보를 추출한다.
-     *
-     * @param token JWT 문자열
-     * @return 추출된 사용자 정보 객체 (없을 경우 Optional.empty)
-     */
-    private Optional<JwtUserDetails> extractUserDetailsFromToken(String token) {
-        try {
-            logger.debug("JWT에서 사용자 정보 추출 시도");
+        UUID id = JwtUtil.getUserId(token);
+        String username = JwtUtil.getUsername(token);
+        List<String> permission = JwtUtil.getUserPermission(token);
 
-            UUID id = JwtUtil.getUserId(token);
-            String username = JwtUtil.getUsername(token);
-            List<String> permission = JwtUtil.getUserPermission(token);
-
-            if (CommonUtil.hasEmpty(id, username, permission)) {
-                logger.warn("JWT에 필수 사용자 정보(id, username, permission)가 없음");
-                return Optional.empty();
-            }
-
-            logger.debug("JWT 사용자 정보 추출 성공: id={}, username={}", id, username);
-            return Optional.of(new JwtUserDetails(token, id, username, permission));
-        } catch (Exception e) {
-            logger.error("JWT에서 사용자 정보 추출 실패", e);
-            return Optional.empty();
+        if (CommonUtil.hasEmpty(id, username) || permission == null) {
+            logger.warn("JWT에 필수 사용자 정보(id, username, permission)가 없음");
+            throw new BaseException(AuthErrorCode.UNAUTHORIZED_INVALID_TOKEN);
         }
+
+        logger.debug("JWT 사용자 정보 추출 성공: id={}, username={}", id, username);
+        return new JwtUserDetails(token, id, username, permission);
     }
 
     /**
-     * 사용자 정보를 기반으로 Spring Security의 Authentication 객체를 생성한다.
-     *
-     * @param jwtUserDetails JWT에서 추출한 사용자 정보
-     * @return 인증 객체 (Authentication) (없을 경우 Optional.empty)
+     * 사용자 정보를 기반으로 Spring Security Authentication 생성
      */
-    private Optional<Authentication> buildAuthentication(JwtUserDetails jwtUserDetails) {
-        try {
-            logger.debug("Authentication 객체 생성 시도: username={}", jwtUserDetails.username());
+    private Authentication buildAuthentication(JwtUserDetails jwtUserDetails) {
+        logger.debug("Authentication 객체 생성 시도: username={}", jwtUserDetails.username());
 
-            SecurityUser principal = new SecurityUser(
-                    jwtUserDetails.id(),
-                    jwtUserDetails.username(),
-                    "",
-                    jwtUserDetails.permission());
+        SecurityUser principal = new SecurityUser(
+                jwtUserDetails.id(),
+                jwtUserDetails.username(),
+                "",
+                jwtUserDetails.permission());
 
-            List<GrantedAuthority> authorities = jwtUserDetails.permission().stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toList());
+        List<GrantedAuthority> authorities = jwtUserDetails.permission().stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
 
-            logger.info("Authentication 객체 생성 완료 - SecurityContext에 등록 예정");
-            return Optional.of(new UsernamePasswordAuthenticationToken(
-                    principal,
-                    jwtUserDetails.token(),
-                    authorities));
+        return new UsernamePasswordAuthenticationToken(principal, jwtUserDetails.token(), authorities);
+    }
 
-        } catch (Exception e) {
-            logger.error("Authentication 객체 생성 실패", e);
-            return Optional.empty();
+    /**
+     * 인증 실패 시 JSON 에러 응답 반환
+     */
+    private void setErrorResponse(HttpServletResponse response, Exception e) throws IOException {
+        // 기본 응답 코드와 메시지 설정
+        int statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+        String errorMessage = CommonErrorCode.INTERNAL_SERVER_ERROR.getLogMessage();
+
+        // 커스텀 예외일 경우, 실제 에러 코드와 메시지로 대체
+        if (e instanceof BaseException baseEx) {
+            statusCode = baseEx.getErrorCode().getCode();
+            errorMessage = baseEx.getMessage();
         }
-    }
 
-    /**
-     * 생성된 인증 정보를 SecurityContext에 설정한다.
-     *
-     * @param authentication 생성된 인증 객체
-     */
-    private void setAuthentication(Authentication authentication) {
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // 응답 객체 세팅
+        response.setStatus(statusCode);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+        // JSON 응답 객체 생성
+        ApiResponse<Void> apiResponse = new ApiResponse<>(statusCode, errorMessage, null, null);
+        String json = ObjectMapperUtil.getInstance().writeValueAsString(apiResponse);
+
+        // 응답 본문 출력
+        try (PrintWriter writer = response.getWriter()) {
+            writer.write(json);
+            writer.flush();
+        }
     }
 
     private record JwtUserDetails(

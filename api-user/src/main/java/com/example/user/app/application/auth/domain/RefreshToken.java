@@ -1,7 +1,6 @@
 package com.example.user.app.application.auth.domain;
 
 import com.example.common.util.JwtUtil;
-import com.example.user.app.application.auth.entity.Device;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

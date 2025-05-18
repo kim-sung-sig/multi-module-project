@@ -3,6 +3,7 @@ package com.example.common.util;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
+import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -11,7 +12,10 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -42,21 +46,7 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .claims(claims)
-                .subject(UUID.randomUUID().toString())
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusSeconds(second)))
-                .signWith(secretKey)
-                .compact();
-    }
-
-    /**
-     * Refresh Token 생성 (껍데기, UUID만 포함)
-     */
-    public static String generateRefreshToken(long second) {
-        Instant now = Instant.now();
-
-        return Jwts.builder()
-                .subject(UUID.randomUUID().toString() + System.currentTimeMillis()) // 랜덤 UUID + 시간
+                .subject(UUID.randomUUID().toString() + System.currentTimeMillis())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusSeconds(second)))
                 .signWith(secretKey)
@@ -86,6 +76,7 @@ public class JwtUtil {
         return getClaims(token).get("username", String.class);
     }
 
+    @Nullable
     public static List<String> getUserPermission(String token) {
         Object raw = getClaims(token).get("permission");
         if (raw instanceof List<?>) {
@@ -93,7 +84,7 @@ public class JwtUtil {
                     .map(Object::toString)
                     .collect(Collectors.toList());
         }
-        return Collections.emptyList();
+        return null;
     }
 
     public static Date getExpiration(String token) {
@@ -103,6 +94,14 @@ public class JwtUtil {
     private static Claims getClaims(String token) {
         return jwtParser.parseSignedClaims(token)
                 .getPayload();
+    }
+
+    public static Map<String, Object> getClaimsMap(String token) {
+        return jwtParser.parseSignedClaims(token)
+                .getPayload()
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
 }

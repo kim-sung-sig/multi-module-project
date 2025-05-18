@@ -1,7 +1,7 @@
 package com.example.user.app.common.config.security;
 
-import com.example.common.enums.ErrorCode;
 import com.example.common.model.ApiResponse;
+import com.example.user.app.common.enums.AuthErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,7 +27,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
             HttpServletResponse response,
             AccessDeniedException accessDeniedException) throws IOException {
 
-        ApiResponse<Void> apiResponse = ApiResponse.error(ErrorCode.FORBIDDEN, null);
+        ApiResponse<Void> apiResponse = ApiResponse.error(AuthErrorCode.FORBIDDEN, null);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 

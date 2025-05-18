@@ -2,17 +2,19 @@ package com.example.user.app.application.auth.components;
 
 import com.example.common.model.SecurityUser;
 import com.example.common.util.JwtUtil;
+import com.example.user.app.application.auth.domain.Device;
 import com.example.user.app.application.auth.domain.RefreshToken;
-import com.example.user.app.application.auth.entity.Device;
 import com.example.user.app.application.auth.entity.RefreshTokenEntity;
 import com.example.user.app.application.auth.exception.TokenLimitExceededException;
 import com.example.user.app.application.auth.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -38,7 +40,7 @@ public class RefreshTokenManager {
             RefreshToken token = maybeSameDeviceToken.get();
 
             if (refreshTokenPolicy.shouldRefresh(token)) {
-                token.refresh(JwtUtil.generateRefreshToken(JwtUtil.REFRESH_TOKEN_TTL));
+                token.refresh(createRefreshTokenVal(device));
                 refreshTokenRepository.save(RefreshTokenEntity.fromDomain(token));
             }
 
@@ -56,7 +58,7 @@ public class RefreshTokenManager {
     }
 
     private RefreshToken createNewToken(SecurityUser user, Device device) {
-        String refreshToken = JwtUtil.generateRefreshToken(JwtUtil.REFRESH_TOKEN_TTL);
+        String refreshToken = createRefreshTokenVal(device);
         Instant expiryAt = JwtUtil.getExpiration(refreshToken).toInstant();
 
         RefreshToken newToken = new RefreshToken(
@@ -72,6 +74,18 @@ public class RefreshTokenManager {
 
         log.debug("[TOKEN SUCCESS] New token issued. userId: {}, device: {}, refreshToken: {}", user.getId(), device, refreshToken);
         return newToken;
+    }
+
+    private String createRefreshTokenVal(@NonNull Device device) {
+
+        Map<String, Object> claims = Map.of(
+                "deviceId", device.getDeviceId(),
+                "platform", device.getPlatform(),
+                "browser", device.getBrowser()
+        );
+
+        // 새로운 토큰 발급
+        return JwtUtil.generateToken(claims, JwtUtil.REFRESH_TOKEN_TTL);
     }
 
 }

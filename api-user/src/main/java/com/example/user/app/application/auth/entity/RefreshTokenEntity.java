@@ -2,6 +2,7 @@ package com.example.user.app.application.auth.entity;
 
 import com.example.common.util.CommonUtil;
 import com.example.common.util.UuidUtil;
+import com.example.user.app.application.auth.domain.Device;
 import com.example.user.app.application.auth.domain.RefreshToken;
 import com.example.user.app.application.user.entity.User;
 import jakarta.persistence.*;

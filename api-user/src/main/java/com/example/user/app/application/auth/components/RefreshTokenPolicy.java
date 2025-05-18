@@ -1,9 +1,10 @@
 package com.example.user.app.application.auth.components;
 
+import com.example.user.app.application.auth.domain.Device;
 import com.example.user.app.application.auth.domain.RefreshToken;
-import com.example.user.app.application.auth.entity.Device;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.Collection;
 
 @Component
@@ -20,6 +21,6 @@ public class RefreshTokenPolicy {
     }
 
     public boolean shouldRefresh(RefreshToken refreshToken) {
-        return refreshToken.isExpiringWithin(java.time.Duration.ofDays(30));
+        return refreshToken.isExpiringWithin(Duration.ofDays(30));
     }
 }

@@ -2,7 +2,7 @@ package com.example.user.app.application.admin.api;
 
 import com.example.common.model.ApiResponse;
 import com.example.user.app.application.admin.service.JwtTokenService;
-import com.example.user.app.application.auth.dto.response.JwtTokenResponse;
+import com.example.user.app.application.auth.dto.JwtTokenDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ public class JwtTokenApi {
 
     @GetMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<ApiResponse< JwtTokenResponse >> getTokenList() {
+    public ResponseEntity<ApiResponse<JwtTokenDto>> getTokenList() {
         return null;
     }
 

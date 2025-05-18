@@ -1,6 +1,6 @@
 package com.example.user.app.application.auth.service;
 
-import com.example.common.enums.ErrorCode;
+import com.example.common.enums.CommonErrorCode;
 import com.example.common.exception.BaseException;
 import com.example.common.exception.TemporaryException;
 import com.example.common.model.SecurityUser;
@@ -8,8 +8,9 @@ import com.example.user.app.application.auth.components.JwtTokenProvider;
 import com.example.user.app.application.auth.components.oauth.OAuth2Data;
 import com.example.user.app.application.auth.components.oauth.OAuth2Exception;
 import com.example.user.app.application.auth.components.oauth.SocialOAuth2Service;
+import com.example.user.app.application.auth.domain.Device;
+import com.example.user.app.application.auth.dto.JwtTokenDto;
 import com.example.user.app.application.auth.dto.request.OAuthRequest;
-import com.example.user.app.application.auth.dto.response.JwtTokenResponse;
 import com.example.user.app.application.nickname.domain.NickName;
 import com.example.user.app.application.nickname.domain.NickNameTag;
 import com.example.user.app.application.nickname.service.NickNameTagGenerator;
@@ -38,7 +39,7 @@ public class OAuth2Service {
     private final Map<String, SocialOAuth2Service> socialServices;  // oauth2 component
 
     @Transactional
-    public JwtTokenResponse createTokenByOAuth(@NonNull OAuthRequest oauthRequest) {
+    public JwtTokenDto createTokenByOAuth(OAuthRequest oauthRequest, Device device) {
         log.info("createTokenByOAuth({}) 호출", oauthRequest);
 
         // 소셜 로그인 사용자 정보 추출
@@ -58,9 +59,7 @@ public class OAuth2Service {
         );
 
         // 토큰 발급
-        JwtTokenResponse token = jwtTokenProvider.getTokenResponseWithDeletion(securityUser);
-        log.info("[TOKEN SUCCESS] New token issued. userId: {}, accessToken: {}, refreshToken: {}", securityUser.getId(), token.accessToken(), token.refreshToken());
-        return token;
+        return jwtTokenProvider.get(securityUser, device);
     }
 
     private OAuth2Data getUserInfo(OAuthRequest oauthRequest) {
@@ -69,16 +68,16 @@ public class OAuth2Service {
 
             return Optional.ofNullable(socialServices.get(provider))
                     .map(service -> service.getUserInfo(oauthRequest))
-                    .orElseThrow(() -> new BaseException(ErrorCode.INVALID_INPUT_REQUEST, "지원하지 않는 소셜 로그인입니다."));
+                    .orElseThrow(() -> new BaseException(CommonErrorCode.INVALID_INPUT_REQUEST, "지원하지 않는 소셜 로그인입니다."));
 
         }
         catch (OAuth2Exception e) {
             log.error("소셜 로그인 실패", e);
             switch (e.getErrorCode()) {
-                case CLIENT -> throw new BaseException(ErrorCode.INVALID_INPUT_REQUEST, e);
+                case CLIENT -> throw new BaseException(CommonErrorCode.INVALID_INPUT_REQUEST, e);
                 case PROVIDER -> throw new TemporaryException(5);
-                case SERVER -> throw new BaseException(ErrorCode.INTERNAL_SERVER_ERROR, "소셜 로그인 서버 오류");
-                default -> throw new BaseException(ErrorCode.INVALID_INPUT_REQUEST, "소셜 로그인 서버 오류");
+                case SERVER -> throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR, "소셜 로그인 서버 오류");
+                default -> throw new BaseException(CommonErrorCode.INVALID_INPUT_REQUEST, "소셜 로그인 서버 오류");
             }
         }
     }
