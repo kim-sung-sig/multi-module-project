@@ -1,5 +1,21 @@
 package com.example.user.app.application.auth.api;
 
+import java.time.Duration;
+import java.time.Instant;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.common.enums.CommonErrorCode;
 import com.example.common.exception.BaseException;
 import com.example.common.model.ApiResponse;
 import com.example.common.model.SecurityUser;
@@ -9,27 +25,19 @@ import com.example.user.app.application.auth.domain.Device;
 import com.example.user.app.application.auth.domain.RefreshToken;
 import com.example.user.app.application.auth.dto.JwtTokenDto;
 import com.example.user.app.application.auth.dto.UsernamePassword;
-import com.example.user.app.application.auth.dto.request.OAuthRequestWrapper;
+import com.example.user.app.application.auth.dto.request.OAuthRequest;
 import com.example.user.app.application.auth.dto.request.UserLoginRequest;
 import com.example.user.app.application.auth.dto.response.JwtTokenResponse;
+import com.example.user.app.application.auth.enums.AuthErrorCode;
 import com.example.user.app.application.auth.service.AuthService;
 import com.example.user.app.application.auth.service.OAuth2Service;
-import com.example.user.app.common.enums.AuthErrorCode;
 import com.example.user.app.common.util.ApiResponseUtil;
+
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.Duration;
-import java.time.Instant;
 
 @Slf4j
 @RestController
@@ -44,28 +52,45 @@ public class AuthApi {
      * 토큰 발급 with username and password
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<JwtTokenResponse>> login(HttpServletResponse response, @Valid @RequestBody UserLoginRequest loginRequest) {
+    public ResponseEntity<ApiResponse<JwtTokenResponse>> login(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @Valid @RequestBody UserLoginRequest loginRequest) {
+
         log.debug("login request : {}", loginRequest);
 
-        JwtTokenDto token = authService.loginWithUsernameAndPassword(new UsernamePassword(loginRequest.username(), loginRequest.password()), new Device());
-        log.debug("login response : {}", token);
+        Device device = extractDeviceInfo(request);
+        JwtTokenDto jwtTokenDto = authService.loginWithUsernameAndPassword(
+                new UsernamePassword(loginRequest.username(), loginRequest.password()), device);
+        log.debug("login response : {}", jwtTokenDto);
 
-        setRefreshTokenCookie(response, token.refreshToken());
-        return ApiResponseUtil.ok(new JwtTokenResponse(token.accessToken()));
+        setRefreshTokenCookie(response, jwtTokenDto.refreshToken());
+
+        return ApiResponseUtil.ok(
+            new JwtTokenResponse(jwtTokenDto.accessToken(), jwtTokenDto.accessTokenExpiry(), device)
+        );
     }
 
     /**
      * 토큰 발급 with social
      */
     @PostMapping("/oauth/login")
-    public ResponseEntity<ApiResponse<JwtTokenResponse>> oauthLogin(HttpServletResponse response, @Valid @RequestBody OAuthRequestWrapper oauthRequestWrapper) {
-        log.debug("oauth login request : {}", oauthRequestWrapper);
+    public ResponseEntity<ApiResponse<JwtTokenResponse>> oauthLogin(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @Valid @RequestBody OAuthRequest oAuthRequest) {
 
-        JwtTokenDto token = oAuth2Service.createTokenByOAuth(oauthRequestWrapper.oAuth(), oauthRequestWrapper.device());
+        log.debug("oauth login request : {}", oAuthRequest);
+
+        Device device = extractDeviceInfo(request);
+        JwtTokenDto token = oAuth2Service.createTokenByOAuth(oAuthRequest, device);
         log.debug("oauth login response : {}", token);
 
         setRefreshTokenCookie(response, token.refreshToken());
-        return ApiResponseUtil.ok(new JwtTokenResponse(token.accessToken()));
+
+        return ApiResponseUtil.ok(
+            new JwtTokenResponse(token.accessToken(), token.accessTokenExpiry(), device)
+        );
     }
 
     /**
@@ -73,23 +98,29 @@ public class AuthApi {
      */
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<JwtTokenResponse>> refresh(
+            HttpServletRequest request,
             HttpServletResponse response,
-            @CookieValue(value = JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshToken
-    ) {
+            @CookieValue(value = JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, required = false) String refreshToken) {
         log.debug("refresh request : {}", refreshToken);
 
-        JwtTokenDto token = authService.reissueToken(refreshToken, new Device());
+        Device device = extractDeviceInfo(request);
+        JwtTokenDto token = authService.refreshToken(refreshToken, device);
         log.debug("refresh response : {}", token);
 
         setRefreshTokenCookie(response, token.refreshToken());
-        return ApiResponseUtil.ok(new JwtTokenResponse(token.accessToken()));
+
+        return ApiResponseUtil.ok(
+            new JwtTokenResponse(token.accessToken(), token.accessTokenExpiry(), device)
+        );
     }
 
     /**
      * 로그아웃
      */
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse< Void >> logout() {
+    public ResponseEntity<ApiResponse<Void>> logout(
+        @CookieValue(value = JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME) String refreshToken
+    ) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (CommonUtil.isEmpty(authentication) || !authentication.isAuthenticated() || isAnonymous(authentication)) {
@@ -112,25 +143,50 @@ public class AuthApi {
         SecurityUser principal = (SecurityUser) authentication.getPrincipal();
         String credentials = (String) authentication.getCredentials();
 
-        authService.logout(principal.getId(), credentials);
+        authService.logout(principal.getId(), credentials, refreshToken);
 
         return ApiResponseUtil.ok();
     }
 
     // 리프레쉬 토큰을 cookie에 저장
-    private static void setRefreshTokenCookie(@NonNull HttpServletResponse response, @NonNull RefreshToken refreshToken) {
+    private static void setRefreshTokenCookie(@NonNull HttpServletResponse response,
+            @NonNull RefreshToken refreshToken) {
 
-        long now = Instant.now().getEpochSecond();
-        long exp = refreshToken.getExpiryAt().getEpochSecond();
+        long maxAge = Duration.between(Instant.now(), refreshToken.getExpiryAt())
+                .toSeconds();
 
-        ResponseCookie cookie = ResponseCookie.from(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, refreshToken.getTokenValue())
+        ResponseCookie cookie = ResponseCookie
+                .from(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, refreshToken.getTokenValue())
                 .httpOnly(true)
                 // .secure(true) // HTTPS 환경에서만 전달되도록
                 .path("/") // 요청 범위 제한
                 .sameSite("Strict")
-                .maxAge(Duration.ofSeconds(Math.max(exp - now, 0))) // 유효기간 설정 (optional)
+                .maxAge(maxAge) // 유효기간 설정 (optional)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    private static void removeRefreshTokenCookie(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie
+                .from(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, "")
+                .httpOnly(true)
+                .path("/") // 요청 범위 제한
+                .sameSite("Strict")
+                .maxAge(0) // 만료 설정
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    private Device extractDeviceInfo(HttpServletRequest request) {
+        String deviceId = request.getHeader("X-Device-Id");
+        String platform = request.getHeader("X-Platform");
+        String browser = request.getHeader("X-Browser");
+
+        if (deviceId == null || platform == null || browser == null) {
+            throw new BaseException(CommonErrorCode.INVALID_INPUT_REQUEST, "Device 정보 헤더가 누락되었습니다.");
+        }
+
+        return new Device(deviceId, platform, browser);
     }
 
     private boolean isAnonymous(Authentication authentication) {

@@ -1,18 +1,22 @@
 package com.example.user.app.application.auth.components;
 
+import java.time.Instant;
+import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
 import com.example.common.exception.BaseException;
 import com.example.common.model.SecurityUser;
 import com.example.common.util.JwtUtil;
 import com.example.user.app.application.auth.domain.Device;
 import com.example.user.app.application.auth.domain.RefreshToken;
 import com.example.user.app.application.auth.dto.JwtTokenDto;
+import com.example.user.app.application.auth.dto.Token;
+import com.example.user.app.application.auth.enums.AuthErrorCode;
 import com.example.user.app.application.auth.exception.TokenLimitExceededException;
-import com.example.user.app.common.enums.AuthErrorCode;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -33,29 +37,29 @@ public class JwtTokenProvider {
         }
 
         // Access Token 발급
-        String accessToken = createAccessToken(user, device);
+        Token accessToken = createAccessToken(user, device);
 
         // Token 반환
         log.info("[TOKEN SUCCESS] New token issued. userId: {}, accessToken: {}, refreshToken: {}", user.getId(), accessToken, refreshToken);
-        return new JwtTokenDto(accessToken, refreshToken);
+        return new JwtTokenDto(
+            accessToken.getToken(),
+            accessToken.getExpiry(),
+            refreshToken);
     }
 
-    private String createAccessToken(SecurityUser user, Device device) {
+    private Token createAccessToken(SecurityUser user, Device device) {
 
         Map<String, Object> claims = Map.of(
             "id", user.getId().toString(),
             "username", user.getUsername(),
-            "permission", user.getPermission(),
-
-            "device", Map.of(
-                "deviceId", device.getDeviceId(),
-                "platform", device.getPlatform(),
-                "browser", device.getBrowser()
-            )
+            "permission", user.getPermission()
         );
 
+        Instant expiry = Instant.now().plusSeconds(JwtUtil.ACCESS_TOKEN_TTL);
+
         // 새로운 토큰 발급
-        return JwtUtil.generateToken(claims, JwtUtil.ACCESS_TOKEN_TTL);
+        String accessToken = JwtUtil.generateToken(claims, expiry);
+        return new Token(accessToken, expiry);
     }
 
 }

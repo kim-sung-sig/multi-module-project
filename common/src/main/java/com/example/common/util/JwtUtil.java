@@ -1,15 +1,5 @@
 package com.example.common.util;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.Jwts;
-import jakarta.annotation.Nullable;
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
@@ -17,6 +7,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
+import jakarta.annotation.Nullable;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class JwtUtil {
@@ -41,14 +43,14 @@ public class JwtUtil {
     /**
      * JWT 생성
      */
-    public static String generateToken(Map<String, Object> claims, long second) {
+    public static String generateToken(Map<String, Object> claims, Instant expiration) {
         Instant now = Instant.now();
 
         return Jwts.builder()
                 .claims(claims)
                 .subject(UUID.randomUUID().toString() + System.currentTimeMillis())
                 .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusSeconds(second)))
+                .expiration(Date.from(expiration))
                 .signWith(secretKey)
                 .compact();
     }

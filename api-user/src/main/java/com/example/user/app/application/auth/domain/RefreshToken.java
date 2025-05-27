@@ -1,14 +1,15 @@
 package com.example.user.app.application.auth.domain;
 
-import com.example.common.util.JwtUtil;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.UUID;
+
+import com.example.user.app.application.auth.dto.Token;
+
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.UUID;
 
 @AllArgsConstructor
 @EqualsAndHashCode
@@ -31,11 +32,11 @@ public class RefreshToken {
         return this.device.equals(otherDevice);
     }
 
-    public void refresh(String newTokenValue) {
+    public void refresh(Token newToken) {
         Instant now = Instant.now();
 
-        this.tokenValue = newTokenValue;
-        this.expiryAt = JwtUtil.getExpiration(newTokenValue).toInstant();
+        this.tokenValue = newToken.getToken();
+        this.expiryAt = newToken.getExpiry();
         this.createBy = now;
         this.lastUsedAt = now;
     }

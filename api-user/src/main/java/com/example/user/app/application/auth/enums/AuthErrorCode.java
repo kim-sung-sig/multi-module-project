@@ -1,6 +1,7 @@
-package com.example.user.app.common.enums;
+package com.example.user.app.application.auth.enums;
 
 import com.example.common.interfaces.ErrorCode;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

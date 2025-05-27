@@ -1,5 +1,13 @@
 package com.example.user.app.application.auth.service;
 
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.common.exception.BaseException;
 import com.example.common.util.CommonUtil;
 import com.example.common.util.JwtUtil;
@@ -11,17 +19,11 @@ import com.example.user.app.application.auth.dto.JwtTokenDto;
 import com.example.user.app.application.auth.dto.SecurityUserDetail;
 import com.example.user.app.application.auth.dto.UsernamePassword;
 import com.example.user.app.application.auth.entity.RefreshTokenEntity;
+import com.example.user.app.application.auth.enums.AuthErrorCode;
 import com.example.user.app.application.auth.repository.RefreshTokenRepository;
-import com.example.user.app.common.enums.AuthErrorCode;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -69,23 +71,26 @@ public class AuthService {
      * 토큰 발급 (refreshTokenVal)
      */
     @Transactional
-    public JwtTokenDto reissueToken(String refreshTokenVal, Device device) {
+    public JwtTokenDto refreshToken(String refreshTokenVal, Device device) {
 
         // STEP 1: 토큰 검증
+        // 1. 토큰이 비어있으면 400 에러
         if (CommonUtil.isEmpty(refreshTokenVal)) {
             log.debug("[TOKEN ERROR] Refresh token is missing");
-            throw new BaseException(AuthErrorCode.UNAUTHORIZED_BAD_REQUEST_REFRESH_TOKEN);                      // 1. 토큰이 비어있으면 400 에러
+            throw new BaseException(AuthErrorCode.UNAUTHORIZED_BAD_REQUEST_REFRESH_TOKEN);
         }
 
+        // 2. 토큰 검증 실패 시 401 에러
         if (JwtUtil.invalidToken(refreshTokenVal)) {
             log.debug("[TOKEN ERROR] Refresh token({}) is invalid or expired", refreshTokenVal);
-            throw new BaseException(AuthErrorCode.UNAUTHORIZED_INVALID_TOKEN);                                  // 2. 토큰 검증 실패 시 401 에러
+            throw new BaseException(AuthErrorCode.UNAUTHORIZED_INVALID_TOKEN);
         }
 
+        // 3. 토큰 저장소 조회 (없으면 401 에러)
         RefreshTokenEntity refreshTokenEntity = refreshTokenRepository.findByTokenValue(refreshTokenVal)
                 .orElseThrow(() -> {
                     log.warn("[TOKEN ERROR] Refresh token({}) not found in repository", refreshTokenVal);
-                    return new BaseException(AuthErrorCode.UNAUTHORIZED_INVALID_TOKEN);                         // 3. 토큰 저장소 조회 (없으면 401 에러)
+                    return new BaseException(AuthErrorCode.UNAUTHORIZED_INVALID_TOKEN);
                 });
 
         // STEP 2: 리프레쉬 토큰 디바이스 & 사용자 확인
@@ -93,11 +98,13 @@ public class AuthService {
         if (!refreshToken.isSameDevice(device)) {
             log.warn("[TOKEN ERROR] Refresh token({}) device mismatch. expected: {}, actual: {}",
                     refreshTokenVal, refreshToken.getDevice(), device);
-            throw new BaseException(AuthErrorCode.UNAUTHORIZED_INVALID_TOKEN_DEVICE_MISMATCH);                  // 1. 디바이스 불일치 시 401 에러
+            // 1. 디바이스 불일치 시 401 에러
+            throw new BaseException(AuthErrorCode.UNAUTHORIZED_INVALID_TOKEN_DEVICE_MISMATCH);
         }
 
         SecurityUserDetail user = loginComponent.loadById(refreshToken.getUserId())
                 .orElseThrow(() -> new BaseException(AuthErrorCode.UNAUTHORIZED_INVALID_TOKEN));                // 2. 유저 조회 (없으면 401 에러)
+
         checkUserStatus(user);                                                                                  // 3. 유저 상태검증
 
         // STEP 3: 리프레쉬 토큰 마지막 사용일 업데이트
@@ -124,7 +131,7 @@ public class AuthService {
      * 로그아웃
      */
     @Transactional
-    public void logout(UUID userId, String accessToken) {
+    public void logout(UUID userId, String accessToken, String refreshToken) {
         // 1. 리프래쉬 토큰 삭제
         refreshTokenRepository.deleteByUserId(userId);
 
