@@ -67,8 +67,7 @@ public class AuthApi {
         setRefreshTokenCookie(response, jwtTokenDto.refreshToken());
 
         return ApiResponseUtil.ok(
-            new JwtTokenResponse(jwtTokenDto.accessToken(), jwtTokenDto.accessTokenExpiry(), device)
-        );
+                new JwtTokenResponse(jwtTokenDto.accessToken(), jwtTokenDto.accessTokenExpiry(), device));
     }
 
     /**
@@ -89,8 +88,7 @@ public class AuthApi {
         setRefreshTokenCookie(response, token.refreshToken());
 
         return ApiResponseUtil.ok(
-            new JwtTokenResponse(token.accessToken(), token.accessTokenExpiry(), device)
-        );
+                new JwtTokenResponse(token.accessToken(), token.accessTokenExpiry(), device));
     }
 
     /**
@@ -110,8 +108,7 @@ public class AuthApi {
         setRefreshTokenCookie(response, token.refreshToken());
 
         return ApiResponseUtil.ok(
-            new JwtTokenResponse(token.accessToken(), token.accessTokenExpiry(), device)
-        );
+                new JwtTokenResponse(token.accessToken(), token.accessTokenExpiry(), device));
     }
 
     /**
@@ -119,8 +116,9 @@ public class AuthApi {
      */
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
-        @CookieValue(value = JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME) String refreshToken
-    ) {
+            HttpServletResponse response,
+            @CookieValue(value = JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME) String refreshToken) {
+
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (CommonUtil.isEmpty(authentication) || !authentication.isAuthenticated() || isAnonymous(authentication)) {
@@ -144,12 +142,14 @@ public class AuthApi {
         String credentials = (String) authentication.getCredentials();
 
         authService.logout(principal.getId(), credentials, refreshToken);
+        removeRefreshTokenCookie(response);
 
         return ApiResponseUtil.ok();
     }
 
     // 리프레쉬 토큰을 cookie에 저장
-    private static void setRefreshTokenCookie(@NonNull HttpServletResponse response,
+    private static void setRefreshTokenCookie(
+            @NonNull HttpServletResponse response,
             @NonNull RefreshToken refreshToken) {
 
         long maxAge = Duration.between(Instant.now(), refreshToken.getExpiryAt())
