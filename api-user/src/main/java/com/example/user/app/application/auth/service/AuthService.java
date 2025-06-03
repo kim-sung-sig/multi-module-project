@@ -21,6 +21,7 @@ import com.example.user.app.application.auth.dto.UsernamePassword;
 import com.example.user.app.application.auth.entity.RefreshTokenEntity;
 import com.example.user.app.application.auth.enums.AuthErrorCode;
 import com.example.user.app.application.auth.repository.RefreshTokenRepository;
+import com.example.user.app.common.config.security.AccessTokenBlackListProvider;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,9 +34,11 @@ public class AuthService {
     // repository
     private final RefreshTokenRepository refreshTokenRepository;
 
+    // components
     private final LoginComponent loginComponent;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;                            // jwt component
+    private final AccessTokenBlackListProvider accessTokenBlackListProvider;    // 블랙리스트 관리 컴포넌트
 
     /**
      * 토큰 발급 (username, password)
@@ -50,14 +53,14 @@ public class AuthService {
         // STEP 2: 존재하든 아니든 더미 유저로 통일 처리
         SecurityUserDetail user = maybeUser.orElseGet(SecurityUserDetail::dummy);
 
-        // STEP 3: 상태검증 (더미는 항상 통과)
-        checkUserStatus(user);
-
-        // STEP 4: password check는 항상 진행 (비용은 같음)
+        // STEP 3: password check는 항상 진행 (비용은 같음)
         boolean passwordMatch = passwordEncoder.matches(usernamePassword.password(), user.getPassword());
 
-        // STEP 5: 존재하고 비밀번호도 맞으면 로그인 성공
+        // STEP 4: 존재하고 비밀번호 확인
         if (maybeUser.isPresent() && passwordMatch) {
+            // STEP 5: 상태검증 (더미는 항상 통과)
+            checkUserStatus(user);
+
             loginComponent.loginSuccess(user);          // 로그인 성공 call back
             return jwtTokenProvider.get(user, device);  // 토큰 발급
         }
@@ -132,8 +135,13 @@ public class AuthService {
      */
     @Transactional
     public void logout(UUID userId, String accessToken, String refreshToken) {
+
         // 1. 리프래쉬 토큰 삭제
         refreshTokenRepository.deleteByUserId(userId);
+        refreshTokenRepository.deleteByTokenValue(refreshToken);
+
+        // 2. 액세스 토큰 블랙리스트에 추가 (redis 트랜잭션을 사용하여야함! 현재는 인메모리)
+        accessTokenBlackListProvider.add(accessToken);
 
         // 3. 로그아웃 성공 로그
         log.info("[LOGOUT SUCCESS] User logged out. userId: {}, accessToken: {}", userId, accessToken);

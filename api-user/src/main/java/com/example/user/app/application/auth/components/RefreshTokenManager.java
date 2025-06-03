@@ -92,4 +92,8 @@ public class RefreshTokenManager {
         return new Token(refreshToken, expiry);
     }
 
+    public void delete(RefreshToken refreshToken) {
+        refreshTokenRepository.deleteById(refreshToken.getId());
+        log.debug("[TOKEN DELETED] Refresh token deleted. id: {}, device: {}", refreshToken.getId(), refreshToken.getDevice());
+    }
 }

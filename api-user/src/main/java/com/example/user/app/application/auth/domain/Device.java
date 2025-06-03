@@ -1,12 +1,12 @@
 package com.example.user.app.application.auth.domain;
 
+import java.util.Objects;
+
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Objects;
 
 @Data
 @Embeddable
@@ -22,6 +22,10 @@ public class Device {
 
     @NotBlank(message = "browser is required")
     private String browser;     // Chrome, Safari 등
+
+    public boolean isWeb() {
+        return "WEB".equalsIgnoreCase(platform);
+    }
 
     @Override
     public boolean equals(Object o) {

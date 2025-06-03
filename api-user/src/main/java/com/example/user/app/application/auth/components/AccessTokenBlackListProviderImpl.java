@@ -1,15 +1,17 @@
 package com.example.user.app.application.auth.components;
 
-import com.example.common.util.CommonUtil;
-import com.example.common.util.JwtUtil;
-import com.example.user.app.common.config.security.AccessTokenBlackListProvider;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import com.example.common.util.CommonUtil;
+import com.example.common.util.JwtUtil;
+import com.example.user.app.common.config.security.AccessTokenBlackListProvider;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -18,7 +20,7 @@ public class AccessTokenBlackListProviderImpl implements AccessTokenBlackListPro
     private final Map<String, Date> blackList = new ConcurrentHashMap<>();
 
     /**
-     * 블랙리스트 추가 
+     * 블랙리스트 추가
      */
     @Override
     public void add(String accessToken) {

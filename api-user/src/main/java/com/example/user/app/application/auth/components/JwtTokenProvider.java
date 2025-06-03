@@ -24,7 +24,10 @@ import lombok.extern.slf4j.Slf4j;
 public class JwtTokenProvider {
 
     private final RefreshTokenManager refreshTokenManager;
+
+    // constants
     public final static String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
+    public final static String REFRESH_TOKEN_HEADER_NAME = "X-Refresh-Token";
 
     public JwtTokenDto get(SecurityUser user, Device device) {
 

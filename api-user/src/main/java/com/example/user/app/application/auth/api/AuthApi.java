@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -64,7 +65,8 @@ public class AuthApi {
                 new UsernamePassword(loginRequest.username(), loginRequest.password()), device);
         log.debug("login response : {}", jwtTokenDto);
 
-        setRefreshTokenCookie(response, jwtTokenDto.refreshToken());
+        if (device.isWeb()) setRefreshTokenCookie(response, jwtTokenDto.refreshToken());
+        else response.setHeader(JwtTokenProvider.REFRESH_TOKEN_HEADER_NAME, jwtTokenDto.refreshToken().getTokenValue());
 
         return ApiResponseUtil.ok(
                 new JwtTokenResponse(jwtTokenDto.accessToken(), jwtTokenDto.accessTokenExpiry(), device));
@@ -116,8 +118,14 @@ public class AuthApi {
      */
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
+            HttpServletRequest request,
             HttpServletResponse response,
-            @CookieValue(value = JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME) String refreshToken) {
+            @RequestHeader(value = "X-Refresh-Token", required = false) String refreshTokenFromHeader,
+            @CookieValue(value = JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME) String refreshTokenFromCookie
+    ) {
+        String refreshToken = CommonUtil.isEmpty(refreshTokenFromHeader)
+            ? refreshTokenFromCookie
+            : refreshTokenFromHeader;
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 

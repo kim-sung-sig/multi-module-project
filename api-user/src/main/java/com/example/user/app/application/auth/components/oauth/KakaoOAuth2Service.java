@@ -1,12 +1,9 @@
 package com.example.user.app.application.auth.components.oauth;
 
-import com.example.common.util.CommonUtil;
-import com.example.common.util.JwtUtil;
-import com.example.user.app.application.auth.components.oauth.OAuth2Exception.OAuth2ErrorCode;
-import com.example.user.app.application.auth.dto.request.OAuthRequest;
-import jakarta.annotation.PostConstruct;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -18,9 +15,13 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Map;
+import com.example.common.util.JwtUtil;
+import com.example.user.app.application.auth.components.oauth.OAuth2Exception.OAuth2ErrorCode;
+import com.example.user.app.application.auth.dto.request.OAuthRequest;
+
+import jakarta.annotation.PostConstruct;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component("kakao")
@@ -71,7 +72,7 @@ public class KakaoOAuth2Service implements SocialOAuth2Service {
                 .toEntity(new ParameterizedTypeReference<>() {});
 
         Map<String, Object> body = response.getBody();
-        if (CommonUtil.isEmpty(body) || !body.containsKey("access_token")) {
+        if (body == null || !body.containsKey("access_token")) {
             log.error("[Kakao getAccessToken 500 Server Error] Response body is null or missing access_token. Body: {}", body);
             throw new OAuth2Exception(OAuth2ErrorCode.SERVER, "[Kakao getAccessToken 500 Server Error] 응답에 access_token이 없습니다.");
         }
@@ -103,7 +104,7 @@ public class KakaoOAuth2Service implements SocialOAuth2Service {
                 .toEntity(new ParameterizedTypeReference<>() {});
 
         Map<String, Object> body = response.getBody();
-        if (CommonUtil.isEmpty(body) || !body.containsKey("access_token")) {
+        if (body == null || !body.containsKey("access_token")) {
             log.error("[Kakao getUserInfo 500 Server Error] Response body is null. Body: {}", body);
             throw new OAuth2Exception(OAuth2ErrorCode.SERVER, "[Kakao getUserInfo 500 Server Error] 응답이 없습니다.");
         }

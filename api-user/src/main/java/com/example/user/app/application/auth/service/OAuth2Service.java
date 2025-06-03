@@ -1,5 +1,16 @@
 package com.example.user.app.application.auth.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Random;
+
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Service;
+
 import com.example.common.enums.CommonErrorCode;
 import com.example.common.exception.BaseException;
 import com.example.common.exception.TemporaryException;
@@ -18,13 +29,10 @@ import com.example.user.app.application.user.entity.User;
 import com.example.user.app.application.user.entity.UserRole;
 import com.example.user.app.application.user.entity.UserStatus;
 import com.example.user.app.application.user.repository.UserRepository;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
 
 @Slf4j
 @Service
@@ -152,7 +160,7 @@ public class OAuth2Service {
         String adjective = adjectives.get(random.nextInt(adjectives.size()));
         String animal = ANIMALS.get(random.nextInt(ANIMALS.size()));
 
-        return verb + " " + adjective + " " + animal;
+        return verb + "" + adjective + "" + animal;
     }
 
 }
