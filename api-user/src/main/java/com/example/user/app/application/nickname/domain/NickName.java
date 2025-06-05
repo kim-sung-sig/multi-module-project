@@ -1,11 +1,14 @@
 package com.example.user.app.application.nickname.domain;
 
-import com.example.common.util.CommonUtil;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import com.example.common.exception.BaseException;
+import com.example.common.util.CommonUtil;
+import com.example.user.app.application.nickname.enums.NickNameErrorCode;
+
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @EqualsAndHashCode
 @ToString
@@ -26,29 +29,32 @@ public class NickName implements Supplier<String> {
     private void validateFormat(String value) {
         // 값 존재 여부
         if (CommonUtil.isEmpty(value)) {
-            throw new IllegalArgumentException("닉네임을 입력해주세요.");
+            throw new BaseException(NickNameErrorCode.NICKNAME_EMPTY);
         }
 
         // 공백 여부
         if (CommonUtil.hasBlank(value)) {
-            throw new IllegalArgumentException("닉네임에 공백에 포함될 수 없습니다.");
+            throw new BaseException(NickNameErrorCode.NICKNAME_CONTAINS_BLANK);
         }
 
         // 문자 길이 여부
-        if (value.length() < 2 || value.length() > 16) {
-            throw new IllegalArgumentException("닉네임은 2자 이상 16자 이하만 가능합니다.");
+        if (value.length() < 2) {
+            throw new BaseException(NickNameErrorCode.NICKNAME_TOO_SHORT);
+        }
+        if (value.length() > 16) {
+            throw new BaseException(NickNameErrorCode.NICKNAME_TOO_LONG);
         }
 
         // 특수 문자 여부
         if (!value.matches("^[a-zA-Z0-9가-힣]+$")) {
-            throw new IllegalArgumentException("유효한 닉네임이 아닙니다. 닉네임은 영문 대소문자, 숫자, 한글만 사용할 수 있습니다.");
+            throw new BaseException(NickNameErrorCode.NICKNAME_INVALID_FORMAT);
         }
     }
 
     public static Optional<NickName> tryCreate(String value) {
         try {
             return Optional.of(new NickName(value));
-        } catch (IllegalArgumentException e) {
+        } catch (BaseException e) {
             return Optional.empty();
         }
     }

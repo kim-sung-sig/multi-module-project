@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,12 +33,10 @@ import com.example.user.app.application.user.repository.UserRepository;
 import com.example.user.app.common.dto.security.SecurityUser;
 
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class OAuth2Service {
 
     // repository
@@ -50,10 +47,12 @@ public class OAuth2Service {
     private final NickNameTagGenerator nickNameTagGenerator;        // nickName component
     private final Map<SocialType, SocialOAuth2Service> socialServices;  // oauth2 component
 
-    public OAuth2Service(UserRepository userRepository,
-                         JwtTokenProvider jwtTokenProvider,
-                         NickNameTagGenerator nickNameTagGenerator,
-                         List<SocialOAuth2Service> socialServices) {
+    public OAuth2Service(
+        UserRepository userRepository,
+        JwtTokenProvider jwtTokenProvider,
+        NickNameTagGenerator nickNameTagGenerator,
+        List<SocialOAuth2Service> socialServices
+    ) {
         this.userRepository = userRepository;
         this.jwtTokenProvider = jwtTokenProvider;
         this.nickNameTagGenerator = nickNameTagGenerator;
@@ -89,11 +88,15 @@ public class OAuth2Service {
         try {
             SocialType provider = oauthRequest.provider();
             log.debug("소셜 로그인 요청: {}", provider);
+            
+            SocialOAuth2Service socialOAuth2Service = socialServices.get(provider);
+            if (socialOAuth2Service == null) {
+                log.error("지원하지 않는 소셜 로그인: {}", provider);
+                throw new BaseException(CommonErrorCode.INVALID_INPUT_REQUEST, "지원하지 않는 소셜 로그인입니다.");
+            }
+            log.debug("provider: {} -> socialOAuth2Service: {}", provider, socialOAuth2Service.getClass().getSimpleName());
 
-            return Optional.ofNullable(socialServices.get(provider))
-                    .map(service -> service.getUserInfo(oauthRequest))
-                    .orElseThrow(() -> new BaseException(CommonErrorCode.INVALID_INPUT_REQUEST, "지원하지 않는 소셜 로그인입니다."));
-
+            return socialOAuth2Service.getUserInfo(oauthRequest);
         }
         catch (OAuth2Exception e) {
             log.error("소셜 로그인 실패", e);
