@@ -49,17 +49,15 @@ public class AuthService {
 
         // STEP 1: 유저 조회 시도
         Optional<SecurityUserDetail> maybeUser = loginComponent.loadByUsername(usernamePassword.username());
-
-        // STEP 2: 존재하든 아니든 더미 유저로 통일 처리
         SecurityUserDetail user = maybeUser.orElseGet(SecurityUserDetail::dummy);
 
-        // STEP 3: password check는 항상 진행 (비용은 같음)
-        boolean passwordMatch = passwordEncoder.matches(usernamePassword.password(), user.getPassword());
+        // STEP 2: password check는 항상 진행 (비용은 같음)
+        boolean passwordMatch = user.validatePassword(passwordEncoder, usernamePassword.password());
 
         // STEP 4: 존재하고 비밀번호 확인
         if (maybeUser.isPresent() && passwordMatch) {
-            // STEP 5: 상태검증 (더미는 항상 통과)
-            checkUserStatus(user);
+            // STEP 5: 상태검증
+            user.validateStatus();
 
             loginComponent.loginSuccess(user);          // 로그인 성공 call back
             return jwtTokenProvider.get(user, device);  // 토큰 발급
@@ -74,7 +72,7 @@ public class AuthService {
      * 토큰 발급 (refreshTokenVal)
      */
     @Transactional
-    public JwtTokenDto refreshToken(String refreshTokenVal, Device device) {
+    public JwtTokenDto refreshToken(String refreshTokenVal, Device requestDevice) {
 
         // STEP 1: 토큰 검증
         // 1. 토큰이 비어있으면 400 에러
@@ -97,37 +95,28 @@ public class AuthService {
                 });
 
         // STEP 2: 리프레쉬 토큰 디바이스 & 사용자 확인
-        RefreshToken refreshToken = RefreshTokenEntity.toDomain(refreshTokenEntity);
-        if (!refreshToken.isSameDevice(device)) {
+        RefreshToken refreshToken = refreshTokenEntity.toDomain();
+        if (!refreshToken.getDevice().isSameDevice(requestDevice)) {
             log.warn("[TOKEN ERROR] Refresh token({}) device mismatch. expected: {}, actual: {}",
-                    refreshTokenVal, refreshToken.getDevice(), device);
+                    refreshTokenVal, refreshToken.getDevice(), requestDevice);
+
             // 1. 디바이스 불일치 시 401 에러
             throw new BaseException(AuthErrorCode.UNAUTHORIZED_INVALID_TOKEN_DEVICE_MISMATCH);
         }
 
+        // 2. 유저 조회 (없으면 401 에러)
         SecurityUserDetail user = loginComponent.loadById(refreshToken.getUserId())
-                .orElseThrow(() -> new BaseException(AuthErrorCode.UNAUTHORIZED_INVALID_TOKEN));                // 2. 유저 조회 (없으면 401 에러)
+                .orElseThrow(() -> new BaseException(AuthErrorCode.UNAUTHORIZED_INVALID_TOKEN));
 
-        checkUserStatus(user);                                                                                  // 3. 유저 상태검증
+        // 3. 유저 상태검증
+        user.validateStatus();
 
         // STEP 3: 리프레쉬 토큰 마지막 사용일 업데이트
-        refreshToken.used(Instant.now());                                                                       // 1. 마지막 사용일 업데이트
-        refreshTokenRepository.save(RefreshTokenEntity.fromDomain(refreshToken));                               // 2. 리프레쉬 토큰 업데이트
+        refreshToken.used(Instant.now());
+        refreshTokenRepository.save(RefreshTokenEntity.fromDomain(refreshToken));
 
         // STEP 4: 토큰 응답
-        return jwtTokenProvider.get(user, device);  // 토큰 발급
-    }
-
-    private void checkUserStatus(SecurityUserDetail securityUser) {
-        if (!securityUser.isEnabled()) {
-            log.warn("[SECURITY WARNING] Disabled user attempted to log in. userId: {}", securityUser.getId());
-            throw new BaseException(AuthErrorCode.UNAUTHORIZED_EXPIRED);
-        }
-
-        if (!securityUser.isAccountNonLocked()) {
-            log.warn("[SECURITY WARNING] Locked user attempted to log in. userId: {}", securityUser.getId());
-            throw new BaseException(AuthErrorCode.FORBIDDEN_LOCKED);
-        }
+        return jwtTokenProvider.get(user, requestDevice);  // 토큰 발급
     }
 
     /**
@@ -137,7 +126,6 @@ public class AuthService {
     public void logout(UUID userId, String accessToken, String refreshToken) {
 
         // 1. 리프래쉬 토큰 삭제
-        refreshTokenRepository.deleteByUserId(userId);
         refreshTokenRepository.deleteByTokenValue(refreshToken);
 
         // 2. 액세스 토큰 블랙리스트에 추가 (redis 트랜잭션을 사용하여야함! 현재는 인메모리)

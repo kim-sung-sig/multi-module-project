@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import com.example.common.enums.CommonErrorCode;
 import com.example.common.exception.BaseException;
 import com.example.common.exception.TemporaryException;
-import com.example.common.model.SecurityUser;
 import com.example.user.app.application.auth.components.JwtTokenProvider;
 import com.example.user.app.application.auth.components.oauth.OAuth2Data;
 import com.example.user.app.application.auth.components.oauth.OAuth2Exception;
@@ -29,6 +28,7 @@ import com.example.user.app.application.user.entity.User;
 import com.example.user.app.application.user.entity.UserRole;
 import com.example.user.app.application.user.entity.UserStatus;
 import com.example.user.app.application.user.repository.UserRepository;
+import com.example.user.app.common.dto.security.SecurityUser;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -41,9 +41,10 @@ public class OAuth2Service {
 
     // repository
     private final UserRepository userRepository;
-    private final JwtTokenProvider jwtTokenProvider;              // jwt component
-    private final NickNameTagGenerator nickNameTagGenerator;        // nickName component
 
+    // components
+    private final JwtTokenProvider jwtTokenProvider;                // jwt component
+    private final NickNameTagGenerator nickNameTagGenerator;        // nickName component
     private final Map<String, SocialOAuth2Service> socialServices;  // oauth2 component
 
     @Transactional

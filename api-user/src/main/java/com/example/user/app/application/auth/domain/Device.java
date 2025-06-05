@@ -27,6 +27,10 @@ public class Device {
         return "WEB".equalsIgnoreCase(platform);
     }
 
+    public boolean isSameDevice(Device other) {
+        return this.equals(other);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;

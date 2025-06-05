@@ -1,17 +1,18 @@
 package com.example.user.app.application.auth.components;
 
-import com.example.user.app.application.auth.domain.Device;
-import com.example.user.app.application.auth.domain.RefreshToken;
-import org.springframework.stereotype.Component;
-
 import java.time.Duration;
 import java.util.Collection;
+
+import org.springframework.stereotype.Component;
+
+import com.example.user.app.application.auth.domain.Device;
+import com.example.user.app.application.auth.domain.RefreshToken;
 
 @Component
 public class RefreshTokenPolicy {
 
     public boolean isTokenLimitExceeded(Collection<RefreshToken> existingTokens, Device device) {
-        boolean exists = existingTokens.stream().anyMatch(t -> t.isSameDevice(device));
+        boolean exists = existingTokens.stream().anyMatch(t -> t.getDevice().isSameDevice(device));
 
         // 최대 발급 가능한 Refresh Token 수
         int maxTokensPerUser = 5;

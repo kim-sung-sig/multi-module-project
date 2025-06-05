@@ -1,9 +1,9 @@
 package com.example.common.model;
 
+import java.util.Map;
+
 import com.example.common.interfaces.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
-
-import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ApiResponse<T>(
@@ -13,7 +13,7 @@ public record ApiResponse<T>(
     Map<String, Object> errors
 ) {
 
-    public static <Void> ApiResponse<Void> ok() {
+    public static ApiResponse<Void> ok() {
         return ok(null);
     }
 

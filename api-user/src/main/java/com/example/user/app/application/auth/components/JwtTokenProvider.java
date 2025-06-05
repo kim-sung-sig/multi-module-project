@@ -6,7 +6,6 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import com.example.common.exception.BaseException;
-import com.example.common.model.SecurityUser;
 import com.example.common.util.JwtUtil;
 import com.example.user.app.application.auth.domain.Device;
 import com.example.user.app.application.auth.domain.RefreshToken;
@@ -14,6 +13,7 @@ import com.example.user.app.application.auth.dto.JwtTokenDto;
 import com.example.user.app.application.auth.dto.Token;
 import com.example.user.app.application.auth.enums.AuthErrorCode;
 import com.example.user.app.application.auth.exception.TokenLimitExceededException;
+import com.example.user.app.common.dto.security.SecurityUser;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

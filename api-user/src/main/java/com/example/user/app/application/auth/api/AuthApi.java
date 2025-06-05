@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.common.enums.CommonErrorCode;
 import com.example.common.exception.BaseException;
 import com.example.common.model.ApiResponse;
-import com.example.common.model.SecurityUser;
 import com.example.common.util.CommonUtil;
 import com.example.user.app.application.auth.components.JwtTokenProvider;
 import com.example.user.app.application.auth.domain.Device;
@@ -32,6 +31,7 @@ import com.example.user.app.application.auth.dto.response.JwtTokenResponse;
 import com.example.user.app.application.auth.enums.AuthErrorCode;
 import com.example.user.app.application.auth.service.AuthService;
 import com.example.user.app.application.auth.service.OAuth2Service;
+import com.example.user.app.common.dto.security.SecurityUser;
 import com.example.user.app.common.util.ApiResponseUtil;
 
 import jakarta.servlet.http.HttpServletRequest;

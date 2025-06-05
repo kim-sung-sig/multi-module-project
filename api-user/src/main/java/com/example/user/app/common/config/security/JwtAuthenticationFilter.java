@@ -23,12 +23,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.example.common.enums.CommonErrorCode;
 import com.example.common.exception.BaseException;
 import com.example.common.model.ApiResponse;
-import com.example.common.model.SecurityUser;
 import com.example.common.util.CommonUtil;
 import com.example.common.util.JwtUtil;
 import com.example.common.util.ObjectMapperUtil;
 import com.example.user.app.application.auth.domain.Device;
 import com.example.user.app.application.auth.enums.AuthErrorCode;
+import com.example.user.app.common.dto.security.SecurityUser;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

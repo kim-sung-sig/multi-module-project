@@ -1,11 +1,13 @@
-package com.example.common.model;
+package com.example.user.app.common.dto.security;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
-
-import java.util.List;
-import java.util.UUID;
 
 
 @Data
@@ -22,4 +24,9 @@ public class SecurityUser {
         this.password = password;
         this.permission = List.copyOf(permission);
     }
+
+    public boolean validatePassword(PasswordEncoder encoder, String rawPassword) {
+        return encoder.matches(rawPassword, this.getPassword());
+    }
+
 }

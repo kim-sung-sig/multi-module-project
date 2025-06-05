@@ -1,9 +1,11 @@
 package com.example.user.app.application.auth.dto;
 
-import com.example.common.model.SecurityUser;
+import com.example.common.exception.BaseException;
+import com.example.user.app.application.auth.enums.AuthErrorCode;
 import com.example.user.app.application.user.entity.User;
 import com.example.user.app.application.user.entity.UserRole;
 import com.example.user.app.application.user.entity.UserStatus;
+import com.example.user.app.common.dto.security.SecurityUser;
 import com.example.user.app.common.util.PasswordUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -68,4 +70,13 @@ public class SecurityUserDetail extends SecurityUser {
         boolean isDummy = true;
     }
 
+    public void validateStatus() {
+        if (!this.isEnabled()) {
+            throw new BaseException(AuthErrorCode.UNAUTHORIZED_EXPIRED);
+        }
+
+        if (!this.isAccountNonLocked()) {
+            throw new BaseException(AuthErrorCode.FORBIDDEN_LOCKED);
+        }
+    }
 }

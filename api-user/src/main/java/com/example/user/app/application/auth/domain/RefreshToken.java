@@ -28,10 +28,6 @@ public class RefreshToken {
         return expiryAt.isBefore(Instant.now().plus(duration));
     }
 
-    public boolean isSameDevice(Device otherDevice) {
-        return this.device.equals(otherDevice);
-    }
-
     public void refresh(Token newToken) {
         Instant now = Instant.now();
 
