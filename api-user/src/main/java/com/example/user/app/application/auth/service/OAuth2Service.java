@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import com.example.user.app.application.auth.components.JwtTokenProvider;
 import com.example.user.app.application.auth.components.oauth.OAuth2Data;
 import com.example.user.app.application.auth.components.oauth.OAuth2Exception;
 import com.example.user.app.application.auth.components.oauth.SocialOAuth2Service;
+import com.example.user.app.application.auth.components.oauth.SocialType;
 import com.example.user.app.application.auth.domain.Device;
 import com.example.user.app.application.auth.dto.JwtTokenDto;
 import com.example.user.app.application.auth.dto.request.OAuthRequest;
@@ -45,7 +48,18 @@ public class OAuth2Service {
     // components
     private final JwtTokenProvider jwtTokenProvider;                // jwt component
     private final NickNameTagGenerator nickNameTagGenerator;        // nickName component
-    private final Map<String, SocialOAuth2Service> socialServices;  // oauth2 component
+    private final Map<SocialType, SocialOAuth2Service> socialServices;  // oauth2 component
+
+    public OAuth2Service(UserRepository userRepository,
+                         JwtTokenProvider jwtTokenProvider,
+                         NickNameTagGenerator nickNameTagGenerator,
+                         List<SocialOAuth2Service> socialServices) {
+        this.userRepository = userRepository;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.nickNameTagGenerator = nickNameTagGenerator;
+        this.socialServices = socialServices.stream()
+                .collect(Collectors.toMap(SocialOAuth2Service::getSocialType, Function.identity()));
+    }
 
     @Transactional
     public JwtTokenDto createTokenByOAuth(OAuthRequest oauthRequest, Device device) {
@@ -73,7 +87,8 @@ public class OAuth2Service {
 
     private OAuth2Data getUserInfo(OAuthRequest oauthRequest) {
         try {
-            String provider = oauthRequest.provider().toLowerCase();
+            SocialType provider = oauthRequest.provider();
+            log.debug("소셜 로그인 요청: {}", provider);
 
             return Optional.ofNullable(socialServices.get(provider))
                     .map(service -> service.getUserInfo(oauthRequest))

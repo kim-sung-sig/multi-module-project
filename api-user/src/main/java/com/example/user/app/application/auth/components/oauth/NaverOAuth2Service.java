@@ -23,7 +23,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component("naver")
+@Component
 @RequiredArgsConstructor
 public class NaverOAuth2Service implements SocialOAuth2Service {
 
@@ -39,6 +39,11 @@ public class NaverOAuth2Service implements SocialOAuth2Service {
     public void init() {
         log.debug("naverClientId: {}", naverClientId);
         log.debug("naverClientSecret: {}", naverClientSecret);
+    }
+
+    @Override
+    public SocialType getSocialType() {
+        return SocialType.NAVER;
     }
 
     @Override

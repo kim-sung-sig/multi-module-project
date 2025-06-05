@@ -20,11 +20,13 @@ import com.example.user.app.application.auth.components.oauth.OAuth2Exception.OA
 import com.example.user.app.application.auth.dto.request.OAuthRequest;
 
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component("kakao")
+@Component
+@RequiredArgsConstructor
 public class KakaoOAuth2Service implements SocialOAuth2Service {
 
     private final RestClient restClient = RestClient.create();
@@ -39,6 +41,11 @@ public class KakaoOAuth2Service implements SocialOAuth2Service {
     public void init() {
         log.debug("kakaoClientId: {}", kakaoClientId);
         log.debug("kakaoClientSecret: {}", kakaoClientSecret);
+    }
+
+    @Override
+    public SocialType getSocialType() {
+        return SocialType.KAKAO;
     }
 
     @Override
