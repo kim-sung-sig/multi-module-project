@@ -5,3 +5,6 @@ project(':common').projectDir = file('common')
 
 include 'api-user'
 project(':api-user').projectDir = file('api-user')
+
+include 'chat-core'
+project(':chat-core').projectDir = file('chat/chat-core')
