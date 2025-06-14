@@ -1,24 +1,24 @@
-package com.example.chat.core.chatcore.domain.model.message;
+package com.example.chat.core.chatcore.infra.entity.message;
 
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
+import com.example.chat.core.chatcore.domain.model.message.MessageType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "text_message")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TextMessage extends Message {
+public class TextMessageEntity extends MessageEntity {
 
     private String content;
 
-    public TextMessage(Long id, Long chatRoomId, Long senderId, String content) {
+    public TextMessageEntity(Long id, Long chatRoomId, Long senderId, String content) {
         super(id, chatRoomId, senderId);
         this.content = content;
     }

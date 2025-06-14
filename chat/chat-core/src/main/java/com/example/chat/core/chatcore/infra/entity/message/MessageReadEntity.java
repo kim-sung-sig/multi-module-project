@@ -1,19 +1,13 @@
-package com.example.chat.core.chatcore.domain.model.message;
+package com.example.chat.core.chatcore.infra.entity.message;
 
-import java.time.LocalDateTime;
-
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 // 어떤 사용자가 어떤 메시지를 읽었는지 기록하는 엔티티입니다.
 @Entity
@@ -22,7 +16,7 @@ import lombok.NoArgsConstructor;
 @IdClass(MessageReadId.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MessageRead {
+public class MessageReadEntity {
 
     @Id
     @Column(name = "message_id")
@@ -36,7 +30,7 @@ public class MessageRead {
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
-    public MessageRead(Long messageId, Long userId) {
+    public MessageReadEntity(Long messageId, Long userId) {
         this.messageId = messageId;
         this.userId = userId;
         this.readAt = LocalDateTime.now();

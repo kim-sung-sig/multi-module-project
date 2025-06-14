@@ -1,26 +1,26 @@
-package com.example.chat.core.chatcore.domain.model.message;
+package com.example.chat.core.chatcore.infra.entity.message;
 
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
+import com.example.chat.core.chatcore.domain.model.message.MessageType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "image_message")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ImageMessage extends Message {
+public class ImageMessageEntity extends MessageEntity {
 
     private String imageUrl;
     private String thumbnailUrl;
     private String fileName;
 
-    public ImageMessage(Long id, Long chatRoomId, Long senderId, String imageUrl, String thumbnailUrl, String fileName) {
+    public ImageMessageEntity(Long id, Long chatRoomId, Long senderId, String imageUrl, String thumbnailUrl, String fileName) {
         super(id, chatRoomId, senderId);
         this.imageUrl = imageUrl;
         this.thumbnailUrl = thumbnailUrl;

@@ -1,8 +1,8 @@
-package com.example.chat.core.chatcore.domain.model.room;
-
-import java.io.Serializable;
+package com.example.chat.core.chatcore.infra.entity.room;
 
 import lombok.Data;
+
+import java.io.Serializable;
 
 @Data
 public class UserChatRoomId implements Serializable {

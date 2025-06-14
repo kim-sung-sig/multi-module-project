@@ -35,10 +35,18 @@ protobuf {
     }
 }
 
+// 'clean' 작업 설정
+tasks.named('clean') {
+    doFirst {
+        delete 'build/generated/source/proto' // 프로토콜 버퍼 생성된 디렉토리 삭제
+    }
+}
+
 sourceSets {
     main {
-        proto {
-            srcDir 'src/main/proto'
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
         }
     }
 }
@@ -59,8 +67,10 @@ dependencies {
     // batch
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     testImplementation 'org.springframework.batch:spring-batch-test'
+
     // mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     // security
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-security'

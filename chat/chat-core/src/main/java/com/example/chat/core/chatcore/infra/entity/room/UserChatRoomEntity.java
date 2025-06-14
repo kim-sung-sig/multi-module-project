@@ -1,20 +1,14 @@
-package com.example.chat.core.chatcore.domain.model.room;
+package com.example.chat.core.chatcore.infra.entity.room;
 
-import java.time.LocalDateTime;
-
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -22,7 +16,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @IdClass(UserChatRoomId.class)
-public class UserChatRoom {
+public class UserChatRoomEntity {
 
     @Id
     @Column(name = "chat_room_id")
@@ -40,13 +34,13 @@ public class UserChatRoom {
     @Column(name = "joined_at")
     private LocalDateTime joinedAt;
 
-    public UserChatRoom(Long chatRoomId, Long userId) {
+    public UserChatRoomEntity(Long chatRoomId, Long userId) {
         this.chatRoomId = chatRoomId;
         this.userId = userId;
         this.joinedAt = LocalDateTime.now();
     }
 
-    public UserChatRoom(Long chatRoomId, Long userId, String roomName) {
+    public UserChatRoomEntity(Long chatRoomId, Long userId, String roomName) {
         this.chatRoomId = chatRoomId;
         this.userId = userId;
         this.roomName = roomName;
