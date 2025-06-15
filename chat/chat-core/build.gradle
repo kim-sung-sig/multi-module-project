@@ -13,47 +13,6 @@ tasks.named('bootJar'){ // bootJar 세팅을 끄기
 tasks.named('jar'){ // jar 설정은 켜기
     enabled = true
 }
-ext {
-    grpcVersion = '1.63.0'
-    springGrpcVersion = "0.8.0"
-}
-
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:3.25.3"
-    }
-    plugins {
-        grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
-        }
-    }
-    generateProtoTasks {
-        all().each { task ->
-            task.plugins {
-                grpc {
-                    option 'jakarta_omit'
-                    option '@generated=omit'
-                }
-            }
-        }
-    }
-}
-
-// 'clean' 작업 설정
-tasks.named('clean') {
-    doFirst {
-        delete 'build/generated/source/proto' // 프로토콜 버퍼 생성된 디렉토리 삭제
-    }
-}
-
-sourceSets {
-    main {
-        java {
-            srcDirs 'build/generated/source/proto/main/grpc'
-            srcDirs 'build/generated/source/proto/main/java'
-        }
-    }
-}
 
 dependencies {
 
@@ -78,6 +37,9 @@ dependencies {
 
     // elasticsearch
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+
+    // mongo
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
     // kafka
     implementation 'org.springframework.kafka:spring-kafka'

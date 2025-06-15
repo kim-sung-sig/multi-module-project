@@ -18,6 +18,8 @@ import java.time.LocalDateTime;
 public abstract class MessageEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "message_id_gen")
+    @SequenceGenerator(name = "message_id_gen", sequenceName = "message_id_seq", allocationSize = 1)
     @Column(name = "id")
     private Long id;
 
