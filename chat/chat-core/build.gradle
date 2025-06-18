@@ -1,9 +1,7 @@
 // chat-core
 plugins {
-    id 'java'
     id 'org.springframework.boot'
     id 'io.spring.dependency-management'
-    id 'com.google.protobuf' version '0.9.4'
 }
 
 tasks.named('bootJar'){ // bootJar 세팅을 끄기

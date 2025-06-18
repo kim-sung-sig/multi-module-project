@@ -1,24 +1,19 @@
 package com.example.chat.core.tests;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class TestService {
 
-    private final TestMongoRepository testMongoRepository;
-
-    @PostConstruct
-    public void init() {
-//        TestDocument testDocument = new TestDocument();
-//        testDocument.setSender("11");
-//        testDocument.setContent("asfasf");
-//        testMongoRepository.save(testDocument);
-//
-//
-//        List<TestDocument> testDocuments = testMongoRepository.findAll();
-//        System.out.println(testDocuments);
+    @KafkaListener(topics = "test-topic", groupId = "test-group")
+    public void listen(List<TestDocument> messages) {
+        System.out.println("Received messages: " + messages);
+        // 메시지 처리 로직 추가
     }
+
 }
