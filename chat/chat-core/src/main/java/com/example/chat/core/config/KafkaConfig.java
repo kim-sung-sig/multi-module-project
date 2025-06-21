@@ -12,6 +12,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
+import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import java.util.Map;
 
 @Configuration
 @EnableKafka
+//@EnableKafkaRetryTopic
 public class KafkaConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
@@ -28,6 +30,7 @@ public class KafkaConfig {
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        factory.setRecordMessageConverter(new StringJsonMessageConverter());
         return factory;
     }
 

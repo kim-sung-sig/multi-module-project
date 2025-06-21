@@ -8,6 +8,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -20,7 +22,12 @@ public class TestListener {
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        kafkaTemplate.send("test-topic", "MESSAGE");
+
+        TestDocument doc = new TestDocument();
+        doc.setId(UUID.randomUUID().toString());
+        doc.setSender("test");
+        doc.setCreatedAt(LocalDateTime.now());
+        kafkaTemplate.send("test-topic", doc);
     }
 
     /**
@@ -30,13 +37,13 @@ public class TestListener {
      * 3. 수동으로 JSON 문자열을 객체 리스트로 변환해보고, 이 과정에서 발생하는 예외를 직접 확인합니다.
      */
     @KafkaListener(topics = "test-topic", groupId = "test-group", containerFactory = "kafkaListenerContainerFactory")
-    public CompletableFuture<Void> listen(String message) {
+    public CompletableFuture<Void> listen(TestDocument testDocument) {
         log.info("======================================================");
-        log.info("Successfully received raw JSON message from Kafka: {}", message);
+        log.info("Successfully received raw JSON message from Kafka: {}", testDocument);
         log.info("======================================================");
 
         return CompletableFuture.runAsync(() -> System.out.println(
-                "Received message: " + message
+                "Received message: " + testDocument.toString()
         ));
     }
 
