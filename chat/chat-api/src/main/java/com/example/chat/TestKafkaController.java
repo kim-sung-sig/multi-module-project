@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
-
 @Slf4j
 @RestController
 @RequestMapping("/test")
@@ -29,7 +27,7 @@ public class TestKafkaController {
                 "id-" + System.currentTimeMillis(),
                 "Message from WebFlux Controller",
                 "asfasfasf",
-                LocalDateTime.now()
+                "asfasf"
         );
 
         log.info("Attempting to send message via GET request: {}", messagePayload);

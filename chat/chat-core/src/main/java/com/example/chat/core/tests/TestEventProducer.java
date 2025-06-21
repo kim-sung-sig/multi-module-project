@@ -11,7 +11,7 @@ public class TestEventProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public TestDocument produce(TestDocument testDocument) {
-        String topic = "test-topic";
+        final String topic = "test-topic";
 
         kafkaTemplate.send(topic, testDocument);
 

@@ -4,9 +4,6 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-
 
 @Document(collection = "messages")
 @Getter
@@ -15,12 +12,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @ToString
-public class TestDocument implements Serializable {
+public class TestDocument {
 
     @Id
     private String id;
 
     private String sender;
     private String content;
-    private LocalDateTime createdAt;
+    private String createdAt;
 }
