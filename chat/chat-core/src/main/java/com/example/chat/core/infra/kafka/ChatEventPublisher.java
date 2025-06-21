@@ -11,8 +11,8 @@ public class ChatEventPublisher {
     private static final String TOPIC_CHAT_MESSAGES = "chat-messages";
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void publishMessageCreated(MessageEntity message) {
-        kafkaTemplate.send(TOPIC_CHAT_MESSAGES, message.getChatRoomId().toString(), message);
+    public void publishMessageCreated(MessageEntity messageEntity) {
+        kafkaTemplate.send(TOPIC_CHAT_MESSAGES, messageEntity.getChatRoomId().toString(), messageEntity);
     }
 
 }
