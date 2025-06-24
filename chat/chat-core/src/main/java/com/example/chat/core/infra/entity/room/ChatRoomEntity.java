@@ -1,27 +1,28 @@
 package com.example.chat.core.infra.entity.room;
 
-import jakarta.persistence.*;
-import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
-@Entity
-@EntityListeners(AuditingEntityListener.class)
 @Table(name = "chat_room")
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 public class ChatRoomEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column("id")
     private Long id;
 
-    @CreatedDate
-    @Column(name = "created_at")
+    @Column("created_at")
     private LocalDateTime createdAt;
 
 }
