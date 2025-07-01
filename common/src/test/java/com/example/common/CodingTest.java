@@ -4,26 +4,31 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 class Solution {
-    public int solution(int number, int limit, int power) {
-        int answer = 0;
+    public int[] solution(String s) {
+        s = s.substring(2, s.length() - 2);
+        String[] sets = s.split("},\\{");
 
-        // 에라토스테네스 체
-        int[] divisorCount = new int[number + 1];
-        for (int i = 1; i <= number; i++) {
-            for (int j = i; j <= number; j += i) {
-                divisorCount[j]++;
-            }
+        Arrays.sort(sets, Comparator.comparingInt(String::length));
+
+        System.out.println(Arrays.toString(sets));
+
+        List<String> result = new ArrayList<>();
+        Set<String> mem = new HashSet<>();
+
+        for (String set : sets) {
+            String[] nums = set.split(",");
+            for (String num : nums) if (mem.add(num)) result.add(num);
         }
 
-        for (int i = 1; i <= number; i++) {
-            int numberOfDivisors = divisorCount[i];
-            answer += (numberOfDivisors > limit)
-                    ? power
-                    : numberOfDivisors;
-        }
-
-        return answer;
+        return result.stream().mapToInt(Integer::valueOf).toArray();
     }
 }
 
@@ -34,11 +39,12 @@ class CodingTest {
     void test() {
         Solution solution = new Solution();
 
-        int number = 5, limit = 3, power = 2, result = 10;
-        int answer = solution.solution(number, limit, power);
+        String s = "{{2},{2,1},{2,1,3},{2,1,3,4}}";
+        int[] result = {2, 1, 3, 4};
+        int[] answer = solution.solution(s);
 
-        System.out.println("answer: " + answer);
-        System.out.println("result:" + result);
+        System.out.println("answer: " + Arrays.toString(answer));
+        System.out.println("result:" + Arrays.toString(result));
         Assertions.assertEquals(result, answer);
     }
 }

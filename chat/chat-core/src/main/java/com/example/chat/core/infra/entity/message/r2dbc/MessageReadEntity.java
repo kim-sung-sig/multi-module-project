@@ -1,4 +1,4 @@
-package com.example.chat.core.infra.entity.message;
+package com.example.chat.core.infra.entity.message.r2dbc;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

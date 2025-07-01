@@ -1,11 +1,11 @@
 package com.example.chat.core.service.message.handler;
 
-import com.example.chat.core.domain.model.message.MessageType;
+import com.example.chat.core.infra.entity.message.r2dbc.MessageEntity;
 import reactor.core.publisher.Mono;
 
 public interface MessageHandler {
 
-    MessageType getMessageType();
+    MessageEntity.MessageType getMessageType();
 
     Mono<Void> handleMessage(Object messageRequest);
 

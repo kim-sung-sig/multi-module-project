@@ -1,6 +1,6 @@
 package com.example.chat.core.service.message.factory;
 
-import com.example.chat.core.domain.model.message.MessageType;
+import com.example.chat.core.infra.entity.message.r2dbc.MessageEntity;
 import com.example.chat.core.service.message.handler.MessageHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -15,14 +15,14 @@ import java.util.stream.Collectors;
 @Component
 public class MessageHandlerFactory {
 
-    private final Map<MessageType, MessageHandler> messageHandlers;
+    private final Map<MessageEntity.MessageType, MessageHandler> messageHandlers;
 
     public MessageHandlerFactory(List<MessageHandler> messageHandlers) {
         this.messageHandlers = messageHandlers.stream()
                 .collect(Collectors.toMap(MessageHandler::getMessageType, Function.identity()));
     }
 
-    public MessageHandler getMessageHandler(MessageType messageType) {
+    public MessageHandler getMessageHandler(MessageEntity.MessageType messageType) {
         return Optional.ofNullable(messageHandlers.get(messageType))
                 .map(handler -> {
                     log.debug("messageType: {}, getMessageHandler:{}", messageType, handler.getClass().getSimpleName());

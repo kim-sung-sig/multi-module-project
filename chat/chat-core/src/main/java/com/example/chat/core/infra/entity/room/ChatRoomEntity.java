@@ -1,5 +1,6 @@
 package com.example.chat.core.infra.entity.room;
 
+import com.example.chat.core.infra.entity.Auditable;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
-public class ChatRoomEntity {
+public class ChatRoomEntity implements Auditable {
 
     @Id
     @Column("id")
@@ -25,4 +26,6 @@ public class ChatRoomEntity {
     @Column("created_at")
     private LocalDateTime createdAt;
 
+    @Column("updated_at")
+    private LocalDateTime updatedAt;
 }

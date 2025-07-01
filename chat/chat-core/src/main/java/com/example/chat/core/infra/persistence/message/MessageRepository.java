@@ -1,6 +1,6 @@
 package com.example.chat.core.infra.persistence.message;
 
-import com.example.chat.core.infra.entity.message.MessageEntity;
+import com.example.chat.core.infra.entity.message.r2dbc.MessageEntity;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.stereotype.Repository;
 

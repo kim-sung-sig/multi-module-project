@@ -1,6 +1,6 @@
 package com.example.chat.core.service.message;
 
-import com.example.chat.core.domain.model.message.MessageType;
+import com.example.chat.core.infra.entity.message.r2dbc.MessageEntity;
 import com.example.chat.core.service.message.factory.MessageHandlerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class MessageService {
         // 메시지 발송 여부 확인
 
         // 메시지 타입 추출
-        MessageType messageType = null;
+        MessageEntity.MessageType messageType = null;
         return Mono.just(messageHandlerFactory.getMessageHandler(messageType))
                 .flatMap(handler -> handler.handleMessage(messageRequest));
     }

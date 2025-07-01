@@ -27,9 +27,13 @@ dependencies {
 
     // DB
     // R2DBC 및 Reactive 지원을 위한 의존성 추가
-    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+    implementation "org.springframework.boot:spring-boot-starter-data-r2dbc"
     implementation "org.postgresql:r2dbc-postgresql"
     implementation "io.r2dbc:r2dbc-h2"
+    runtimeOnly "org.postgresql:postgresql"
+
+    // mongo
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
 
     // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
