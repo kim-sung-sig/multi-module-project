@@ -1,0 +1,120 @@
+// chat-core
+plugins {
+    id 'java'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+    id 'com.google.protobuf' version '0.9.4'
+}
+
+tasks.named('bootJar'){ // bootJar 세팅을 끄기
+    enabled = true
+}
+
+ext {
+    grpcVersion = '1.63.0'
+    springGrpcVersion = "0.8.0"
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.25.3"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.plugins {
+                grpc {
+                    option 'jakarta_omit'
+                    option '@generated=omit'
+                }
+            }
+        }
+    }
+}
+
+// 'clean' 작업 설정
+tasks.named('clean') {
+    doFirst {
+        delete 'build/generated/source/proto' // 프로토콜 버퍼 생성된 디렉토리 삭제
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
+}
+
+dependencies {
+
+    implementation project(':common')
+
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    // webFlux
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // security
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    // mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // DB
+    // R2DBC 및 Reactive 지원을 위한 의존성 추가
+    implementation "org.springframework.boot:spring-boot-starter-data-r2dbc"
+    implementation "org.postgresql:r2dbc-postgresql"
+    implementation "io.r2dbc:r2dbc-h2"
+    implementation "org.postgresql:postgresql"
+
+    // mongo
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
+
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+
+    // kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.apache.kafka:kafka-streams'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+    // flyway
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
+    // validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // spring cloud
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+    // gRPC Core
+    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation 'net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE'
+    implementation 'net.devh:grpc-client-spring-boot-starter:2.15.0.RELEASE'
+//    implementation "org.springframework.grpc:spring-grpc-spring-boot-starter"
+
+    // implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    // implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // (선택) Zipkin으로 트레이스 정보를 보내고 싶을 때
+    //implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.projectreactor:reactor-test'
+    runtimeOnly 'org.springframework.boot:spring-boot-docker-compose'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
