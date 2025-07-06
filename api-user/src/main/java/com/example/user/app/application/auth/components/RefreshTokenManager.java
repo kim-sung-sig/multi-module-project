@@ -1,14 +1,5 @@
 package com.example.user.app.application.auth.components;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import com.example.common.util.JwtUtil;
 import com.example.user.app.application.auth.domain.Device;
 import com.example.user.app.application.auth.domain.RefreshToken;
@@ -17,9 +8,16 @@ import com.example.user.app.application.auth.entity.RefreshTokenEntity;
 import com.example.user.app.application.auth.exception.TokenLimitExceededException;
 import com.example.user.app.application.auth.repository.RefreshTokenRepository;
 import com.example.user.app.common.dto.security.SecurityUser;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -78,6 +76,8 @@ public class RefreshTokenManager {
 
     private Token createRefreshTokenVal(@NonNull Device device) {
 
+        String subject = UUID.randomUUID().toString() + System.currentTimeMillis();
+
         Map<String, Object> claims = Map.of(
             "random", UUID.randomUUID().toString()
         );
@@ -85,7 +85,7 @@ public class RefreshTokenManager {
         Instant expiry = Instant.now().plusSeconds(JwtUtil.REFRESH_TOKEN_TTL);
 
         // 새로운 토큰 발급
-        String refreshToken = JwtUtil.generateToken(claims, expiry);
+        String refreshToken = JwtUtil.generateToken(subject, claims, expiry);
         return new Token(refreshToken, expiry);
     }
 

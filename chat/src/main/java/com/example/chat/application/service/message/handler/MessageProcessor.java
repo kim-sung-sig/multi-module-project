@@ -3,7 +3,7 @@ package com.example.chat.application.service.message.handler;
 import com.example.chat.infra.entity.message.r2dbc.MessageEntity;
 import reactor.core.publisher.Mono;
 
-public interface MessageHandler {
+public interface MessageProcessor {
 
     MessageEntity.MessageType getMessageType();
 

@@ -1,10 +1,5 @@
 package com.example.user.app.application.auth.components;
 
-import java.time.Instant;
-import java.util.Map;
-
-import org.springframework.stereotype.Component;
-
 import com.example.common.exception.BaseException;
 import com.example.common.util.JwtUtil;
 import com.example.user.app.application.auth.domain.Device;
@@ -14,9 +9,12 @@ import com.example.user.app.application.auth.dto.Token;
 import com.example.user.app.application.auth.enums.AuthErrorCode;
 import com.example.user.app.application.auth.exception.TokenLimitExceededException;
 import com.example.user.app.common.dto.security.SecurityUser;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.time.Instant;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -52,6 +50,8 @@ public class JwtTokenProvider {
 
     private Token createAccessToken(SecurityUser user, Device device) {
 
+        String subject = user.getId().toString();
+
         Map<String, Object> claims = Map.of(
             "id", user.getId().toString(),
             "username", user.getUsername(),
@@ -61,7 +61,7 @@ public class JwtTokenProvider {
         Instant expiry = Instant.now().plusSeconds(JwtUtil.ACCESS_TOKEN_TTL);
 
         // 새로운 토큰 발급
-        String accessToken = JwtUtil.generateToken(claims, expiry);
+        String accessToken = JwtUtil.generateToken(subject, claims, expiry);
         return new Token(accessToken, expiry);
     }
 

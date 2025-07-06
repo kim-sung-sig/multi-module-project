@@ -7,7 +7,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
-public abstract class AbstractMessageHandler implements MessageHandler {
+public abstract class AbstractMessageProcessor implements MessageProcessor {
 
     private final ApplicationEventPublisher applicationEventPublisher;
 

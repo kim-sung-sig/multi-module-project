@@ -1,5 +1,15 @@
 package com.example.common.util;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
+import jakarta.annotation.Nullable;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
@@ -8,25 +18,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.Jwts;
-import jakarta.annotation.Nullable;
-import jakarta.annotation.PostConstruct;
-
 @Component
 public class JwtUtil {
 
     private static SecretKey secretKey;
     private static JwtParser jwtParser;
 
-    @Value("${jwt.secret-key}")
+    @Value("${jwt.secret-key:YIPWu4GDG60vjc8ddrKsK4bmaSKK0pxE}")
     private String originSecretKey;
 
     public static final String AUTHORIZATION = "Authorization";
@@ -38,17 +36,24 @@ public class JwtUtil {
     public void init() {
         JwtUtil.secretKey = new SecretKeySpec(originSecretKey.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
         JwtUtil.jwtParser = Jwts.parser().verifyWith(secretKey).build();
+
+        // test
+        String accessToken = generateToken("1",
+                Map.of("roles", List.of("ADMIN", "USER"), "authorities", List.of("READ", "WRITE")),
+                Instant.now().plusSeconds(ACCESS_TOKEN_TTL));
+
+        System.out.println("accessToken:" + accessToken);
     }
 
     /**
      * JWT 생성
      */
-    public static String generateToken(Map<String, Object> claims, Instant expiration) {
+    public static String generateToken(String subject, Map<String, Object> claims, Instant expiration) {
         Instant now = Instant.now();
 
         return Jwts.builder()
                 .claims(claims)
-                .subject(UUID.randomUUID().toString() + System.currentTimeMillis())
+                .subject(subject)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiration))
                 .signWith(secretKey)
