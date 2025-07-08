@@ -25,6 +25,7 @@ public class ChatWebSocketHandler implements WebSocketHandler {
     public @NonNull Mono<Void> handle(@NonNull WebSocketSession session) {
         final Long chatRoomId = extractChatRoomIdFromSession(session);
 
+        // 아 webflux chating 너무 어렵다..
         Mono<Long> userIdMono = session.getHandshakeInfo().getPrincipal()
                 .map(principal -> Long.valueOf(principal.getName()))
                 .switchIfEmpty(Mono.error(new SecurityException("User not authenticated.")));
