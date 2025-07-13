@@ -1,4 +1,4 @@
-package com.example.chat.app.config;
+package com.example.chat.app.common.config;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
