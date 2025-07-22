@@ -1,5 +1,6 @@
 package com.example.chat.app.common.config;
 
+import com.example.chat.app.common.dto.security.CustomJwtAuthenticationToken;
 import com.example.chat.app.common.dto.security.SecurityUser;
 import com.example.common.util.CommonUtil;
 import com.example.common.util.JwtUtil;
@@ -16,12 +17,17 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -29,6 +35,7 @@ import java.util.stream.Collectors;
 public class AuthChannelInterceptor implements ChannelInterceptor {
 
 	//private final ChatRoomAccessValidator chatRoomAccessValidator;
+	private final ReactiveJwtDecoder jwtDecoder;
 
 	@Override
 	public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
@@ -37,10 +44,10 @@ public class AuthChannelInterceptor implements ChannelInterceptor {
 
 		// 1. 연결 시점 (CONNECT): JWT 인증
 		if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-			String jwt = accessor.getFirstNativeHeader(JwtUtil.AUTHORIZATION);
+			String jwtHeader = accessor.getFirstNativeHeader(JwtUtil.AUTHORIZATION);
 
-			if (jwt != null && jwt.startsWith(JwtUtil.BEARER_PREFIX)) {
-				String token = jwt.substring(JwtUtil.BEARER_PREFIX.length());
+			if (jwtHeader != null && jwtHeader.startsWith(JwtUtil.BEARER_PREFIX)) {
+				String token = jwtHeader.substring(JwtUtil.BEARER_PREFIX.length());
 				if (JwtUtil.invalidToken(token)) {
 					JwtUserDetails userDetails = extractUserDetailsFromToken(token);
 					Authentication auth = buildAuthentication(userDetails);
@@ -78,6 +85,33 @@ public class AuthChannelInterceptor implements ChannelInterceptor {
 		}
 
 		return message;
+	}
+
+	private Authentication buildAuthentication(String token) {
+		Jwt jwt;
+		try {
+			jwt = jwtDecoder.decode(token).block();
+		} catch (Exception e) {
+			log.warn("Invalid JWT token", e);
+			throw new SecurityException("Invalid JWT token");
+		}
+
+		Map<String, Object> claims = CommonUtil.isEmpty(jwt.getClaims()) ? Collections.emptyMap() : jwt.getClaims();
+
+		Object rolesClaim = jwt.getClaims().get("roles");
+		List<String> roles = (rolesClaim instanceof List<?> rList) ?
+				rList.stream().map(Object::toString).toList() : List.of();
+
+		Object authoritiesClaim = jwt.getClaims().get("authorities");
+		List<String> authorities = (authoritiesClaim instanceof List<?> aList) ?
+				aList.stream().map(Object::toString).toList() : List.of();
+
+		List<GrantedAuthority> grantedAuthorities = Stream.concat(
+				roles.stream().map(role -> "ROLE_" + role.toUpperCase()),
+				authorities.stream()
+		).map(SimpleGrantedAuthority::new).collect(Collectors.toUnmodifiableList());
+
+		return new CustomJwtAuthenticationToken(jwt, grantedAuthorities);
 	}
 
 	private JwtUserDetails extractUserDetailsFromToken(String token) {

@@ -1,50 +1,45 @@
 package com.example.common;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.TreeMap;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 class Solution {
-    public int[] solution(String s) {
-        s = s.substring(2, s.length() - 2);
-        String[] sets = s.split("},\\{");
+	public int[] solution(String[] operations) {
+		var map = new TreeMap<Integer, Integer>();
+		for (var op : operations) {
+			var arr = op.split(" ");
+			var o = arr[0];
+			var num = Integer.parseInt(arr[1]);
 
-        Arrays.sort(sets, Comparator.comparingInt(String::length));
+			if (o.equals("I")) map.merge(num, 1, Integer::sum);
+			else if (!map.isEmpty()) {
+				var key = num < 0 ? map.firstKey() : map.lastKey();
+				map.computeIfPresent(key, (k, v) -> v > 1 ? v - 1 : null);
+			}
+		}
 
-        System.out.println(Arrays.toString(sets));
-
-        List<String> result = new ArrayList<>();
-        Set<String> mem = new HashSet<>();
-
-        for (String set : sets) {
-            String[] nums = set.split(",");
-            for (String num : nums) if (mem.add(num)) result.add(num);
-        }
-
-        return result.stream().mapToInt(Integer::valueOf).toArray();
-    }
+		return map.isEmpty() ? new int[]{0, 0} : new int[]{map.lastKey(), map.firstKey()};
+	}
 }
 
 class CodingTest {
 
-    @Test
-    @DisplayName("Test")
-    void test() {
-        Solution solution = new Solution();
+	@Test
+	@DisplayName("Test")
+	void test() {
+		Solution solution = new Solution();
 
-        String s = "{{2},{2,1},{2,1,3},{2,1,3,4}}";
-        int[] result = {2, 1, 3, 4};
-        int[] answer = solution.solution(s);
+		String[] operations = {"I 16", "I -5643", "D -1", "D 1", "D 1", "I 123", "D -1"};
+		int[] result = {0,0};
+		int[] answer = solution.solution(operations);
 
-        System.out.println("answer: " + Arrays.toString(answer));
-        System.out.println("result:" + Arrays.toString(result));
-        Assertions.assertEquals(result, answer);
-    }
+		System.out.println("answer: " + Arrays.toString(answer));
+		System.out.println("result:" + Arrays.toString(result));
+		assertArrayEquals(result, answer);
+	}
 }
