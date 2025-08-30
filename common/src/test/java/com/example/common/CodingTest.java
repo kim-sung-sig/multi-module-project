@@ -2,28 +2,23 @@ package com.example.common;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-import java.util.TreeMap;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-
+import static org.junit.jupiter.api.Assertions.*;
 class Solution {
-	public int[] solution(String[] operations) {
-		var map = new TreeMap<Integer, Integer>();
-		for (var op : operations) {
-			var arr = op.split(" ");
-			var o = arr[0];
-			var num = Integer.parseInt(arr[1]);
+	public int solution(int n, int w, int num) {
+		int floor = (num - 1) / w + 1; // 물건의 층수
+		int totalFloors = (n - 1) / w + 1; // 최고층수
 
-			if (o.equals("I")) map.merge(num, 1, Integer::sum);
-			else if (!map.isEmpty()) {
-				var key = num < 0 ? map.firstKey() : map.lastKey();
-				map.computeIfPresent(key, (k, v) -> v > 1 ? v - 1 : null);
-			}
-		}
+		// 최고층인 경우
+		if (floor == totalFloors) return 1;
 
-		return map.isEmpty() ? new int[]{0, 0} : new int[]{map.lastKey(), map.firstKey()};
+		int tempIndex = (num - 1) % w;
+		int index = floor % 2 == 0 ? (w - 1) - tempIndex : tempIndex;
+
+		int lastTempIndex = (n - 1) % w;
+		int lastIndex = totalFloors % 2 == 0 ? (w - 1) - lastTempIndex : lastTempIndex;
+
+		int k = (totalFloors % 2 == 0 && index < lastIndex) || (totalFloors % 2 == 1 && lastIndex < index) ? -1 : 0;
+		return totalFloors - floor + 1 + k;
 	}
 }
 
@@ -32,14 +27,13 @@ class CodingTest {
 	@Test
 	@DisplayName("Test")
 	void test() {
+		int n = 22, w = 6, num = 8, result = 3;
 		Solution solution = new Solution();
 
-		String[] operations = {"I 16", "I -5643", "D -1", "D 1", "D 1", "I 123", "D -1"};
-		int[] result = {0,0};
-		int[] answer = solution.solution(operations);
+		int answer = solution.solution(n, w, num);
 
-		System.out.println("answer: " + Arrays.toString(answer));
-		System.out.println("result:" + Arrays.toString(result));
-		assertArrayEquals(result, answer);
+		System.out.println("answer: " + answer);
+		System.out.println("result:" + result);
+		assertEquals(result, answer);
 	}
 }

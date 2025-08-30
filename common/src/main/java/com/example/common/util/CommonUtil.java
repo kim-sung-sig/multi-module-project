@@ -8,11 +8,9 @@ import java.util.Arrays;
 public class CommonUtil {
 
     public static boolean isEmpty(Object obj) {
-        if (obj == null)
-            return true;
+        if (obj == null) return true;
 
-        if (obj instanceof String str)
-            return !StringUtils.hasText(str.trim());
+        if (obj instanceof String str) return !StringUtils.hasText(str);
 
         return ObjectUtils.isEmpty(obj);
     }
@@ -25,12 +23,10 @@ public class CommonUtil {
         return StringUtils.containsWhitespace(str);
     }
 
-    public static String trim(String str) {
-        return str == null ? null : str.trim();
-    }
-
-    public static String normalize(String str) {
-        return trim(str);  // 확장 포인트
+    public static String safeTrim(String str) {
+        return str == null
+                ? null
+                : str.strip();
     }
 
 }
