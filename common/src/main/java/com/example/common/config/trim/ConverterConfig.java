@@ -1,4 +1,4 @@
-package com.example.common.config;
+package com.example.common.config.trim;
 
 import com.example.common.util.CommonUtil;
 import lombok.RequiredArgsConstructor;

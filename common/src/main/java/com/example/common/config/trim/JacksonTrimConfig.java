@@ -1,9 +1,12 @@
-package com.example.common.config;
+package com.example.common.config.trim;
 
 import com.example.common.util.CommonUtil;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import lombok.RequiredArgsConstructor;
@@ -36,15 +39,30 @@ public class JacksonTrimConfig {
 	}
 
 
-	static class TrimStringDeserializer extends StdDeserializer<String> {
+	static class TrimStringDeserializer extends StdDeserializer<String> implements ContextualDeserializer {
+
+		private BeanProperty property;
 
 		public TrimStringDeserializer() {
 			super(String.class);
 		}
 
+		private TrimStringDeserializer(BeanProperty property) {
+			super(String.class);
+			this.property = property;
+		}
+
 		@Override
 		public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+			if (property != null && property.getAnnotation(NoTrim.class) != null) {
+				return p.getValueAsString(); // trim 안함
+			}
 			return CommonUtil.safeTrim(p.getValueAsString());
+		}
+
+		@Override
+		public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
+			return new TrimStringDeserializer(property);
 		}
 
 	}

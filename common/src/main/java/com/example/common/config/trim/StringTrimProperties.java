@@ -1,4 +1,4 @@
-package com.example.common.config;
+package com.example.common.config.trim;
 
 import lombok.Getter;
 import lombok.Setter;
