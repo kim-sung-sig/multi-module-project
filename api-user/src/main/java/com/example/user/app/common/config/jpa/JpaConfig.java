@@ -21,33 +21,32 @@ import jakarta.persistence.PersistenceContext;
 @EnableJpaAuditing
 public class JpaConfig {
 
-    @PersistenceContext
-    private EntityManager entityManager;
+	@PersistenceContext
+	private EntityManager entityManager;
 
-    @Bean
-    JPAQueryFactory jpaQueryFactory() {
-        return new JPAQueryFactory(entityManager);
-    }
+	@Bean
+	JPAQueryFactory jpaQueryFactory() {
+		return new JPAQueryFactory(entityManager);
+	}
 
-    @Bean
-    AuditorAware<UUID> getCurrentAuditor() {
-        return () -> {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	@Bean
+	AuditorAware<UUID> getCurrentAuditor() {
+		return () -> {
+			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-            if (authentication == null
-                    || !authentication.isAuthenticated()
-                    || authentication instanceof AnonymousAuthenticationToken) {
-                return Optional.empty();
-            }
+			if (authentication == null
+					|| !authentication.isAuthenticated()
+					|| authentication instanceof AnonymousAuthenticationToken) {
+				return Optional.empty();
+			}
 
-            Object principal = authentication.getPrincipal();
-            if (!(principal instanceof SecurityUser)) {
-                return Optional.empty();
-            }
+			Object principal = authentication.getPrincipal();
+			if (!(principal instanceof SecurityUser securityUser)) {
+				return Optional.empty();
+			}
 
-            SecurityUser securityUser = (SecurityUser) principal;
-            return Optional.of(securityUser.getId()); // UUID
-        };
-    }
+			return Optional.of(securityUser.getId()); // UUID
+		};
+	}
 
 }

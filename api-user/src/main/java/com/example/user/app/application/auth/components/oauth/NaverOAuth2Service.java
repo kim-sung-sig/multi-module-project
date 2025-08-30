@@ -3,6 +3,7 @@ package com.example.user.app.application.auth.components.oauth;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -25,6 +26,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(
+        prefix = "oauth.naver",
+        name = "client-id"
+)
 public class NaverOAuth2Service implements SocialOAuth2Service {
 
     private final RestClient restClient = RestClient.create();
