@@ -34,10 +34,10 @@ public class SecurityConfig {
             "/swagger-resources/**",
             "/webjars/**",
             "/actuator/**",
-            "/api/user/auth/login",
-            "/api/user/auth/oauth2/login",
-            "/api/user/auth/token/refresh",
-            "/api/user/auth/token/refresh/verify",
+            "/api/v1/auth/login",
+            "/api/v1/auth/oauth2/login",
+            "/api/v1/auth/token/refresh",
+            "/api/v1/auth/token/refresh/verify",
     };
 
     @Bean

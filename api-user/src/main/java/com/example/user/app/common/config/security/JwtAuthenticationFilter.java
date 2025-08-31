@@ -10,6 +10,7 @@ import com.example.user.app.application.auth.enums.AuthErrorCode;
 import com.example.user.app.application.auth.exception.CustomAuthenticationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -42,8 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
-    ) throws ServletException, IOException {
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         Optional<String> tokenOpt = extractTokenFromHeader(request);
         if (tokenOpt.isEmpty()) {
@@ -62,7 +63,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             
             logger.debug("JWT 인증 성공");
-        } catch (CustomAuthenticationException e) {
+        }
+        catch (CustomAuthenticationException e) {
             logger.debug("JWT 인증 실패: {}", e.getMessage());
             request.setAttribute("jwtException", e);
         }
@@ -74,10 +76,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * Authorization 헤더에서 JWT 추출
      */
     private Optional<String> extractTokenFromHeader(HttpServletRequest request) {
-        String header = request.getHeader(JwtUtil.AUTHORIZATION);
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String bearer = OAuth2AccessToken.TokenType.BEARER.getValue() + " ";
         return Optional.ofNullable(header)
-                .filter(h -> h.startsWith(JwtUtil.BEARER_PREFIX))
-                .map(h -> h.substring(JwtUtil.BEARER_PREFIX.length()));
+                .filter(h -> h.startsWith(bearer))
+                .map(h -> h.substring(bearer.length()));
     }
 
     /**

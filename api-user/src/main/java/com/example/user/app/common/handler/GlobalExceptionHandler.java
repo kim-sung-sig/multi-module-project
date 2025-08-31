@@ -4,10 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.example.common.model.ApiResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,89 +23,132 @@ import com.example.common.exception.ValidationException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 @Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-    public static final String CODE = "code";
-    public static final String MESSAGE = "message";
-    public static final String ERRORS = "errors";
-    public static final String RETRY_AFTER = "retryAfterSeconds";
+	public static final String CODE = "code";
+	public static final String MESSAGE = "message";
+	public static final String ERRORS = "errors";
+	public static final String RETRY_AFTER = "retryAfterSeconds";
 
-    // private final ErrorLogRepository errorLogRepository;
+	// private final ErrorLogRepository errorLogRepository;
 
-    // 기본 에러 포맷
-    private Map<String, Object> createErrorResponse(String code, String message, Map<String, String> errors) {
-        Map<String, Object> body = new HashMap<>();
-        body.put(CODE, code);
-        body.put(MESSAGE, message);
+	// 기본 에러 포맷
+	private Map<String, Object> createErrorResponse(String code, String message, Map<String, String> errors) {
+		Map<String, Object> body = new HashMap<>();
+		body.put(CODE, code);
+		body.put(MESSAGE, message);
 
-        if (errors != null) {
-            body.put(ERRORS, errors);
-        }
+		if (errors != null) {
+			body.put(ERRORS, errors);
+		}
 
-        return body;
-    }
+		return body;
+	}
 
-    private Map<String, Object> createErrorResponse(String code, String message) {
-        return createErrorResponse(code, message, null);
-    }
+	private Map<String, Object> createErrorResponse(String code, String message) {
+		return createErrorResponse(code, message, null);
+	}
 
-    private void logError(Exception e, HttpServletRequest request) {
-        try {
-            log.error("Exception occurred: {}", e.getMessage(), e);
-            // ErrorLogEntity errorLog = ErrorLogEntity.of(e, request);
-            // errorLogRepository.save(errorLog);
-        } catch (Exception ex) {
-            log.error("Error while logging exception: {}", ex.getMessage(), ex);
-        }
-    }
+	private void logError(Exception e, HttpServletRequest request) {
+		try {
+			log.error("Exception occurred: {}", e.getMessage(), e);
+			// ErrorLogEntity errorLog = ErrorLogEntity.of(e, request);
+			// errorLogRepository.save(errorLog);
+		} catch (Exception ex) {
+			log.error("Error while logging exception: {}", ex.getMessage(), ex);
+		}
+	}
 
-    // 일반적인 예외 처리 (시스템 예외)
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleException(Exception e, HttpServletRequest request) {
-        Map<String, Object> body = createErrorResponse("INTERNAL_SERVER_ERROR", "시스템 오류가 발생했습니다.");
-        logError(e, request);
-        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+	// 일반적인 예외 처리 (시스템 예외)
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<Map<String, Object>> handleException(Exception e, HttpServletRequest request) {
+		Map<String, Object> body = createErrorResponse("INTERNAL_SERVER_ERROR", "시스템 오류가 발생했습니다.");
+		logError(e, request);
+		return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
 
-    // Validation 예외
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
-                .filter(error -> error.getDefaultMessage() != null)
-                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+	// Validation 예외
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+		Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
+				.filter(error -> error.getDefaultMessage() != null)
+				.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
 
-        Map<String, Object> body = createErrorResponse("VALIDATION_ERROR", "입력값이 올바르지 않습니다.", errors);
+		Map<String, Object> body = createErrorResponse("VALIDATION_ERROR", "입력값이 올바르지 않습니다.", errors);
 
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
+		return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+	}
 
-    // Validation 예외
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationExceptions(ValidationException e) {
-        Map<String, Object> body = createErrorResponse("VALIDATION_ERROR", "입력값이 올바르지 않습니다.", e.getErrors());
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
+	// Validation 예외
+	@ExceptionHandler(ValidationException.class)
+	public ResponseEntity<Map<String, Object>> handleValidationExceptions(ValidationException e) {
+		Map<String, Object> body = createErrorResponse("VALIDATION_ERROR", "입력값이 올바르지 않습니다.", e.getErrors());
+		return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+	}
 
-    // 일시적인 예외 처리
-    @ExceptionHandler(TemporaryException.class)
-    public ResponseEntity<Map<String, Object>> handleTemporaryException(TemporaryException e) {
-        Map<String, Object> body = createErrorResponse("TEMPORARY_ERROR", e.getMessage());
-        body.put(RETRY_AFTER, e.getRetryAfterSeconds());
+	// 일시적인 예외 처리
+	@ExceptionHandler(TemporaryException.class)
+	public ResponseEntity<Map<String, Object>> handleTemporaryException(TemporaryException e) {
+		Map<String, Object> body = createErrorResponse("TEMPORARY_ERROR", e.getMessage());
+		body.put(RETRY_AFTER, e.getRetryAfterSeconds());
 
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .header(HttpHeaders.RETRY_AFTER, String.valueOf(e.getRetryAfterSeconds()))
-                .body(body);
-    }
+		return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+				.header(HttpHeaders.RETRY_AFTER, String.valueOf(e.getRetryAfterSeconds()))
+				.body(body);
+	}
 
-    // BusinessException 예외
-    @ExceptionHandler(BaseException.class)
-    public ResponseEntity<Map<String, Object>> handleBusinessException(BaseException e) {
-        Map<String, Object> body = createErrorResponse("BUSINESS_ERROR", e.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
-    }
+	// BusinessException 예외
+	@ExceptionHandler(BaseException.class)
+	public ResponseEntity<Map<String, Object>> handleBusinessException(BaseException e) {
+		Map<String, Object> body = createErrorResponse("BUSINESS_ERROR", e.getMessage());
+		return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+	public ResponseEntity<ApiResponse<Void>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+		log.error("Unsupported method: {}", ex.getMethod(), ex);
+
+		ApiResponse<Void> response = new ApiResponse<>(
+				HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+				"지원하지 않는 HTTP 메서드입니다. [" + ex.getMethod() + "]",
+				null,
+				null
+		);
+
+		return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(response);
+	}
+
+	@ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+	public ResponseEntity<ApiResponse<Void>> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex) {
+		log.error("Unsupported media type: {}", ex.getContentType(), ex);
+
+		ApiResponse<Void> response = new ApiResponse<>(
+				HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
+				"지원하지 않는 Content-Type 입니다. [" + ex.getContentType() + "]",
+				null,
+				null
+		);
+
+		return ResponseEntity.status(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE).body(response);
+	}
+
+	@ExceptionHandler(NoHandlerFoundException.class)
+	public ResponseEntity<ApiResponse<Void>> handleNotFound(NoHandlerFoundException ex) {
+		log.error("No handler found: {} {}", ex.getHttpMethod(), ex.getRequestURL(), ex);
+
+		ApiResponse<Void> response = new ApiResponse<>(
+				HttpServletResponse.SC_NOT_FOUND,
+				"요청하신 리소스를 찾을 수 없습니다. [" + ex.getRequestURL() + "]",
+				null,
+				null
+		);
+
+		return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND).body(response);
+	}
 
 }

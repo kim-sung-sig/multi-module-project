@@ -54,10 +54,20 @@ public class JacksonTrimConfig {
 
 		@Override
 		public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-			if (property != null && property.getAnnotation(NoTrim.class) != null) {
-				return p.getValueAsString(); // trim 안함
+			if (shouldSkipTrim()) {
+				return p.getValueAsString();
 			}
 			return CommonUtil.safeTrim(p.getValueAsString());
+		}
+
+		private boolean shouldSkipTrim() {
+			if (property == null) return false;
+
+			boolean hasFieldNoTrim = property.getAnnotation(NoTrim.class) != null;
+			boolean hasClassNoTrim = property.getMember() != null &&
+					property.getMember().getDeclaringClass().isAnnotationPresent(NoTrim.class);
+
+			return hasFieldNoTrim || hasClassNoTrim;
 		}
 
 		@Override
@@ -67,38 +77,92 @@ public class JacksonTrimConfig {
 
 	}
 
-	static class TrimStringListDeserializer extends StdDeserializer<List<String>> {
+	static class TrimStringListDeserializer extends StdDeserializer<List<String>> implements ContextualDeserializer {
+
+		private BeanProperty property;
 
 		public TrimStringListDeserializer() {
 			super(List.class);
+		}
+
+		private TrimStringListDeserializer(BeanProperty property) {
+			super(List.class);
+			this.property = property;
 		}
 
 		@Override
 		public List<String> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 			List<String> list = ctxt.readValue(p, ctxt.getTypeFactory().constructCollectionType(List.class, String.class));
 			if (list == null) return null;
+
+			if (shouldSkipTrim()) {
+				return list;
+			}
+
 			return list.stream()
 					.map(CommonUtil::safeTrim)
 					.toList();
 		}
 
+		private boolean shouldSkipTrim() {
+			if (property == null) return false;
+
+			boolean hasFieldNoTrim = property.getAnnotation(NoTrim.class) != null;
+			boolean hasClassNoTrim = property.getMember() != null &&
+					property.getMember().getDeclaringClass().isAnnotationPresent(NoTrim.class);
+
+			return hasFieldNoTrim || hasClassNoTrim;
+		}
+
+		@Override
+		public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
+			return new TrimStringListDeserializer(property);
+		}
+
 	}
 
-	static class TrimStringMapDeserializer extends StdDeserializer<Map<String, String>> {
+	static class TrimStringMapDeserializer extends StdDeserializer<Map<String, String>> implements ContextualDeserializer {
+
+		private BeanProperty property;
 
 		public TrimStringMapDeserializer() {
 			super(Map.class);
+		}
+
+		private TrimStringMapDeserializer(BeanProperty property) {
+			super(Map.class);
+			this.property = property;
 		}
 
 		@Override
 		public Map<String, String> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 			Map<String, String> map = ctxt.readValue(p, ctxt.getTypeFactory().constructMapType(Map.class, String.class, String.class));
 			if (map == null) return null;
+
+			if (shouldSkipTrim()) {
+				return map;
+			}
+
 			return map.entrySet().stream()
 					.collect(Collectors.toMap(
 							e -> CommonUtil.safeTrim(e.getKey()),
 							e -> CommonUtil.safeTrim(e.getValue())
 					));
+		}
+
+		private boolean shouldSkipTrim() {
+			if (property == null) return false;
+
+			boolean hasFieldNoTrim = property.getAnnotation(NoTrim.class) != null;
+			boolean hasClassNoTrim = property.getMember() != null &&
+					property.getMember().getDeclaringClass().isAnnotationPresent(NoTrim.class);
+
+			return hasFieldNoTrim || hasClassNoTrim;
+		}
+
+		@Override
+		public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
+			return new TrimStringMapDeserializer(property);
 		}
 
 	}

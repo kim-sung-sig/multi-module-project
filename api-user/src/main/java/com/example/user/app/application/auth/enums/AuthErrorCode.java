@@ -10,11 +10,10 @@ import lombok.RequiredArgsConstructor;
 public enum AuthErrorCode implements ErrorCode {
 
     // 인증 관련
-    UNAUTHORIZED(401, "기본 권한 문제"),
+    UNAUTHORIZED(401, "로그인 후 이용 가능합니다."),
     UNAUTHORIZED_EXPIRED(401, "계정 만료"),
     UNAUTHORIZED_BAD_CREDENTIALS(401, "아이디 또는 비밀번호 틀림"),
 
-    UNAUTHORIZED_NO_TOKEN(401, "로그인 후 이용 가능합니다."),
     UNAUTHORIZED_INVALID_TOKEN(401, "잘못된 토큰"),
     UNAUTHORIZED_EXPIRED_TOKEN(401, "만료된 토큰"),
     UNAUTHORIZED_DEVICE_NOT_FOUND(401, "디바이스 정보 없음"),

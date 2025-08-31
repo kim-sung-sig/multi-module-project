@@ -2,6 +2,7 @@ package com.example.user.app.common.config.security;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 
 import com.example.common.interfaces.ErrorCode;
 import com.example.common.model.ApiResponse;
@@ -29,11 +30,11 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 	public void commence(
 			HttpServletRequest request,
 			HttpServletResponse response,
-			AuthenticationException authException
-	) throws IOException {
+			AuthenticationException authException) throws IOException {
 
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
 		Object jwtExceptionCandidate = request.getAttribute(SecurityConstant.JWT_EXCEPTION);
 
