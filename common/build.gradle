@@ -1,38 +1,43 @@
 plugins {
-    id 'org.springframework.boot'
-    id 'io.spring.dependency-management'
+	id 'org.springframework.boot'
+	id 'io.spring.dependency-management'
 }
 ext {
-    springGrpcVersion = "0.8.0"
+	springGrpcVersion = "0.8.0"
 }
 
-tasks.named('bootJar'){ // bootJar 세팅을 끄기
+tasks.named('bootJar') { // bootJar 세팅을 끄기
 	enabled = false
 }
 
-tasks.named('jar'){ // jar 설정은 켜기
+tasks.named('jar') { // jar 설정은 켜기
 	enabled = true
 }
 
 dependencies {
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
 
-    implementation 'org.springframework.boot:spring-boot-starter'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.springframework.boot:spring-boot-starter'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-    // https://mvnrepository.com/artifact/com.github.f4b6a3/uuid-creator
+	// https://mvnrepository.com/artifact/com.github.f4b6a3/uuid-creator
 	implementation 'com.github.f4b6a3:uuid-creator:6.0.0'
 
-    // https://mvnrepository.com/artifact/com.google.code.gson/gson
-    implementation 'com.google.code.gson:gson:2.10.1'
+	// https://mvnrepository.com/artifact/com.google.code.gson/gson
+	implementation 'com.google.code.gson:gson:2.10.1'
 
-    // jwt
+	// jwt
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
-    implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
-    implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// trace 추적
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+//	implementation 'io.micrometer:micrometer-tracing-reporter-wavefront'
+
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 }
