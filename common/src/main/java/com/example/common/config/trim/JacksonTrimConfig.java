@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Jackson 문자열 트림 설정.
+ */
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties(StringTrimProperties.class)
