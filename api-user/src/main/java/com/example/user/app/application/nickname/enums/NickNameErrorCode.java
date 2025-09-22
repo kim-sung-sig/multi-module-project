@@ -1,6 +1,6 @@
 package com.example.user.app.application.nickname.enums;
 
-import com.example.common.interfaces.ErrorCode;
+import com.example.common.exception.ErrorCode;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

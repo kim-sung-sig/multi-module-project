@@ -2,7 +2,7 @@ package com.example.common.model;
 
 import java.util.Map;
 
-import com.example.common.interfaces.ErrorCode;
+import com.example.common.exception.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

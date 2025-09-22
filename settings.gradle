@@ -12,7 +12,7 @@ project(':api-chat').projectDir = file('chat')
 include 'api-chat2'
 project(':api-chat2').projectDir = file('api-chat')
 
-
+include('board')
 include('configserver')
 include('eurekaservice')
 include('gateway')

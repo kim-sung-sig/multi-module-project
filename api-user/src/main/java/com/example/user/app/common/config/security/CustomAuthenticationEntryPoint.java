@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 
-import com.example.common.interfaces.ErrorCode;
+import com.example.common.exception.ErrorCode;
 import com.example.common.model.ApiResponse;
 import com.example.user.app.application.auth.enums.AuthErrorCode;
 import com.example.user.app.application.auth.exception.CustomAuthenticationException;
