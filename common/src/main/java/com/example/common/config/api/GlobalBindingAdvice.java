@@ -1,9 +1,11 @@
 package com.example.common.config.api;
 
+import com.example.common.util.CommonUtil;
 import org.springframework.beans.propertyeditors.CustomCollectionEditor;
 import org.springframework.beans.propertyeditors.CustomMapEditor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.lang.NonNull;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -19,10 +21,10 @@ public class GlobalBindingAdvice {
 	@InitBinder
 	public void initBinder(WebDataBinder binder) {
 		// 단일 String
-		binder.registerCustomEditor(String.class, new StringTrimmerEditor(true) {
+		binder.registerCustomEditor(String.class, new StringTrimmerEditor(false) {
 			@Override
 			public void setAsText(String text) {
-				super.setAsText(text != null ? text.trim() : null);
+				super.setAsText(CommonUtil.safeTrim(text));
 			}
 		});
 
@@ -36,9 +38,8 @@ public class GlobalBindingAdvice {
 			}
 
 			@Override
-			@NonNull
-			protected Object convertElement(@NonNull Object element) {
-				if (element instanceof String s) return s.trim();
+			protected Object convertElement(Object element) {
+				if (element instanceof String text) return text.strip();
 				return element;
 			}
 		});
