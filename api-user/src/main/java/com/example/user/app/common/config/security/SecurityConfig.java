@@ -38,6 +38,7 @@ public class SecurityConfig {
             "/api/v1/auth/oauth2/login",
             "/api/v1/auth/token/refresh",
             "/api/v1/auth/token/refresh/verify",
+            "/api/v1/board/test/**"
     };
 
     @Bean

@@ -15,7 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 public class GlobalResponseAdvice implements ResponseBodyAdvice<Object> {
 	@Override
 	public boolean supports(@NonNull MethodParameter returnType, @NonNull Class converterType) {
-		return true;
+		return false;
 	}
 
 	@Override

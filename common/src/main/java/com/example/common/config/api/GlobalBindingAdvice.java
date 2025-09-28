@@ -28,6 +28,6 @@ public class GlobalBindingAdvice {
 		binder.registerCustomEditor(List.class, new CustomCollectionEditor(List.class));
 
 		// Map 처리
-		binder.registerCustomEditor(Map.class, new CustomMapEditor(Map.class));
+		binder.registerCustomEditor(Map.class, new CustomMapEditor(Map.class, true));
 	}
 }
