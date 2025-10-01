@@ -40,3 +40,4 @@ out/
 # Secrets
 application-secret.properties
 /configserver/src/main/resources/application.properties
+/chatserver/docker/data/

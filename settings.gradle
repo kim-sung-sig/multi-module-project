@@ -14,5 +14,6 @@ project(':api-chat2').projectDir = file('api-chat')
 
 include('board')
 include('configserver')
+include('chatserver')
 include('eurekaservice')
 include('gateway')
