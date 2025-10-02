@@ -1,4 +1,4 @@
-package com.example.chat.config.datasource;
+package com.example.chat.config.db.datasource;
 
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;

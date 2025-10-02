@@ -1,4 +1,4 @@
-package com.example.chat.config.datasource;
+package com.example.chat.config.db.datasource;
 
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;

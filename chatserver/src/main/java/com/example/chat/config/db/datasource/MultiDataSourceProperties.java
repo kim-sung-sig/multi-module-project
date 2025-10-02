@@ -1,4 +1,4 @@
-package com.example.chat.config.datasource;
+package com.example.chat.config.db.datasource;
 
 import lombok.Getter;
 import lombok.Setter;
