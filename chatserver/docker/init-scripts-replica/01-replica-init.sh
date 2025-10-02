@@ -1,25 +1,27 @@
 #!/bin/bash
-set -e
+set -ex
 
-# 데이터 디렉토리가 비어있을 때만 복제 초기화 실행
-if [ -z "$(ls -A /var/lib/postgresql/data)" ]; then
-    echo "Initializing PostgreSQL Replica from primary..."
+# Windows + Docker 볼륨 문제로, 중간 디렉토리 없이 직접 초기화
+REPLICA_DATA="/var/lib/postgresql/data"
 
-    # 💡 PGPASSWORD 환경 변수를 설정하여 pg_basebackup이 비밀번호를 사용할 수 있도록 함
-    export PGPASSWORD="${REPLICA_PASSWORD}"
+# 기존 데이터가 남아있으면 삭제
+echo "Cleaning replica data directory..."
+rm -rf "$REPLICA_DATA"/*
 
-    PGDATA_INIT=/var/lib/postgresql/data-init
-    mkdir -p "$PGDATA_INIT"
+echo "Initializing replica from primary..."
 
-    # 호스트 이름 수정: ms-postgres-source
-    # --password 옵션은 필요 없어졌으므로 제거
-    pg_basebackup -h postgres-source -D "$PGDATA_INIT" -U ${REPLICA_USER} -P --wal-method=stream
+# 비밀번호 환경 변수 설정
+export PGPASSWORD="replica_password"
 
-    # 복제 설정 파일 생성 (standby.signal은 pg_basebackup 시 자동으로 생성될 수 있음)
-    echo "primary_conninfo = 'host=postgres-source port=5432 user=${REPLICA_USER} password=${REPLICA_PASSWORD}'" >> "$PGDATA_INIT/postgresql.conf"
+# pg_basebackup로 데이터 가져오기
+pg_basebackup -h ms-postgres-source -D "$REPLICA_DATA" -U replica_user -P --wal-method=stream
 
-    # 생성된 데이터로 기존 데이터 디렉토리를 덮어씀
-    mv "$PGDATA_INIT"/* /var/lib/postgresql/data/
-    rmdir "$PGDATA_INIT"
-    echo "Replica initialization complete."
-fi
+# standby.signal 생성
+touch "$REPLICA_DATA/standby.signal"
+
+# primary 연결 정보 작성
+cat >> "$REPLICA_DATA/postgresql.conf" <<EOF
+primary_conninfo = 'host=ms-postgres-source port=5432 user=replica_user password=replica_password'
+EOF
+
+echo "Replica initialization complete."
