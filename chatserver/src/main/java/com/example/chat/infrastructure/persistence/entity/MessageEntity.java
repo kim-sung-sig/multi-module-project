@@ -1,4 +1,4 @@
-package com.example.chat.db.entity;
+package com.example.chat.infrastructure.persistence.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,11 +13,14 @@ import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Entity
 @Table(name = "ms_message")
@@ -51,6 +54,7 @@ public class MessageEntity {
 	private LocalDateTime createdAt;
 
 	@Column(name = "details")
-	private Object details;
+	@JdbcTypeCode(SqlTypes.JSON)
+	private Map<String, Object> details;
 
 }

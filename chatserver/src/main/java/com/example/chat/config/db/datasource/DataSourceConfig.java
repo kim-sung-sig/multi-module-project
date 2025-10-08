@@ -28,8 +28,8 @@ public class DataSourceConfig {
 				.build();
 		RoutingDataSource routingDataSource = new RoutingDataSource();
 		Map<Object, Object> targetDataSources = new HashMap<>();
-		targetDataSources.put("source", source);
-		targetDataSources.put("replica", replica);
+		targetDataSources.put(DataSourceType.SOURCE.getKey(), source);
+		targetDataSources.put(DataSourceType.REPLICA.getKey(), replica);
 		routingDataSource.setTargetDataSources(targetDataSources);
 		routingDataSource.setDefaultTargetDataSource(source);
 
