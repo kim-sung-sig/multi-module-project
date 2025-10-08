@@ -1,5 +1,6 @@
 package com.example.chat.config.websocket;
 
+import com.example.chat.domain.room.RoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
@@ -21,7 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthChannelInterceptor implements ChannelInterceptor {
 
-	private final RoomService roomService = new TestRoomService();
+	private final RoomService roomService;
 
 	@Override
 	public Message<?> preSend(@NonNull Message<?> message, @NonNull MessageChannel channel) {
@@ -62,16 +63,4 @@ public class AuthChannelInterceptor implements ChannelInterceptor {
 		}
 	}
 
-}
-
-interface RoomService {
-	boolean userHasAccess(Long userId, UUID roomId);
-}
-
-class TestRoomService implements RoomService {
-
-	@Override
-	public boolean userHasAccess(Long userId, UUID roomId) {
-		return true;
-	}
 }
